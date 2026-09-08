@@ -1,0 +1,18 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /games/{gameId} {
+      // Anyone authenticated can create a game or read a game
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.resource.data.whitePlayerId == request.auth.uid;
+      
+      // Update rules
+      allow update: if request.auth != null && (
+        // The user must be a participant in the game
+        (request.auth.uid == resource.data.whitePlayerId || request.auth.uid == resource.data.blackPlayerId) ||
+        // Or a user joining a waiting game
+        (resource.data.status == 'waiting' && request.resource.data.blackPlayerId == request.auth.uid)
+      );
+    }
+  }
+}
