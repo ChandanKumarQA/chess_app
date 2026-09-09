@@ -20,6 +20,7 @@ class EndgameAndSurvivalTest {
         for (cat in categories) {
             val puzzles = PuzzleRepository.getSurvivalPuzzlesByCategory(cat)
             assertEquals("Category $cat must have 100 puzzles", 100, puzzles.size)
+            assertEquals("Category $cat must have 100 unique FENs", 100, puzzles.map { it.fen }.distinct().size)
 
             for (i in 1..100) {
                 val puzzle = puzzles[i - 1]
@@ -42,7 +43,15 @@ class EndgameAndSurvivalTest {
 
         for (cat in categories) {
             val lessons = PuzzleRepository.getEndgameLessonsByCategory(cat)
-            assertEquals("Category $cat must have 100 lessons", 100, lessons.size)
+            val distinctCount = lessons.map { it.fen }.distinct().size
+            if (distinctCount != 100) {
+                println("Category $cat has $distinctCount unique FENs:")
+                val counts = lessons.groupBy { it.fen }.filter { it.value.size > 1 }
+                for ((fen, list) in counts) {
+                    println("  Duplicates (${list.size} times): $fen, levels: ${list.map { it.id }}")
+                }
+            }
+            assertEquals("Category $cat must have 100 unique FENs", 100, distinctCount)
 
             // Test first 15 lessons for each category to ensure move legality
             for (lesson in lessons.take(15)) {
@@ -88,9 +97,7 @@ class EndgameAndSurvivalTest {
         for (cat in categories) {
             val puzzles = PuzzleRepository.getPuzzlesByCategory(cat)
             assertEquals("Category $cat must have 100 puzzles", 100, puzzles.size)
-
-            val uniqueFens = puzzles.map { it.fen }.distinct()
-            assertTrue("Category $cat should have multiple distinct positions, found ${uniqueFens.size}", uniqueFens.size > 1)
+            assertEquals("Category $cat must have 100 unique FENs", 100, puzzles.map { it.fen }.distinct().size)
 
             // Test all puzzles for each category to ensure move legality
             for (puzzle in puzzles) {
@@ -214,6 +221,7 @@ class EndgameAndSurvivalTest {
     fun testLevelPuzzlesLegalityAndGrading() {
         val levelPuzzles = PuzzleRepository.levelPuzzles
         assertEquals("Level puzzles must have 100 puzzles", 100, levelPuzzles.size)
+        assertEquals("Level puzzles must have 100 unique FENs", 100, levelPuzzles.map { it.fen }.distinct().size)
 
         val engine = GameEngine()
         val errors = mutableListOf<String>()

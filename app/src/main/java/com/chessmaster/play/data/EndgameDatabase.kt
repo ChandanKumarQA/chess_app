@@ -292,6 +292,34 @@ object EndgameDatabase {
             "Centralize your Queen with Qd3-e3+! Confine the Black King to d5.",
             "Check with Qe3, then centralize Kd3.",
             listOf("d3e3", "e4d5", "e2d3")
+        ),
+        RawLesson(
+            "Queen vs c-pawn",
+            "8/8/8/8/8/2k5/2p5/K2Q4 w - - 0 1",
+            "Control the promotion square: Qd1-c1, Black King to b3, then Qe3+.",
+            "Play Qc1 then Qe3.",
+            listOf("d1c1", "c3b3", "c1e3")
+        ),
+        RawLesson(
+            "Queen Staircase Check",
+            "8/8/8/8/4k3/8/4p3/2KQ4 w - - 0 1",
+            "Execute the staircase maneuver with Qd1-d2+! Then blockade on e1.",
+            "Play Qd2 then Qe1.",
+            listOf("d1d2", "e4f3", "d2e1")
+        ),
+        RawLesson(
+            "Queen King Drive",
+            "8/8/8/8/2k5/4Q3/4K3/8 w - - 0 1",
+            "Drive the opposing King back with Qe3-e4+! Follow up with Ke2-d3.",
+            "Deliver check with Qe4, then Kd3.",
+            listOf("e3e4", "c4c5", "e2d3")
+        ),
+        RawLesson(
+            "Queen Escort Pass",
+            "8/8/8/8/5k2/3Q4/4K3/8 w - - 0 1",
+            "Confine the King with Qd3-e3+! Step forward with Ke2-f2.",
+            "Play Qe3 then Kf2.",
+            listOf("d3e3", "f4g4", "e2f2")
         )
     )
 
@@ -324,6 +352,20 @@ object EndgameDatabase {
             "Deliver check with Bd3-c4+! Lock the Black King on the queenside.",
             "Play Bc4 then Kc3.",
             listOf("d3c4", "c6c5", "c2c3")
+        ),
+        RawLesson(
+            "Bishop Long Diagonal Control",
+            "8/8/8/8/8/5B2/4K3/6k1 w - - 0 1",
+            "Lock the opponent King in the corner with Bf3-e4! Prepare Ke2-f3.",
+            "Play Be4 then Kf3.",
+            listOf("f3e4", "g1h2", "e2f3")
+        ),
+        RawLesson(
+            "Opposite Colored Bishop Draw",
+            "8/8/4k3/8/3B4/8/4K3/5b2 w - - 0 1",
+            "Neutralize threats with Ke2xf1! White secures the drawn opposite bishop position.",
+            "Take the bishop with Kxf1.",
+            listOf("e2f1", "e6d5", "f1f2")
         )
     )
 
@@ -356,10 +398,118 @@ object EndgameDatabase {
             "Deploy the Knight to f4! Guard e6 and maintain a solid wall with Ke2-e3.",
             "Play Nf4 then Ke3.",
             listOf("d3f4", "d6e5", "e2e3")
+        ),
+        RawLesson(
+            "Knight Corner Domination",
+            "8/8/8/8/8/3N4/4K3/7k w - - 0 1",
+            "Confine the King to the h1 corner with Nd3-f2+! Step forward with Ke2-f3.",
+            "Play Nf2+ then Kf3.",
+            listOf("d3f2", "h1g1", "e2f3")
+        ),
+        RawLesson(
+            "Knight Outpost Jump",
+            "8/8/4k3/8/8/4N3/4K3/8 w - - 0 1",
+            "Jump into the center with Ne3-d5! Support your Knight with Ke2-d3.",
+            "Play Nd5 then Kd3.",
+            listOf("e3d5", "e6d6", "e2d3")
         )
     )
 
-    fun getLessons(category: String): List<EndgameLesson> {
+    // === PASSED PAWNS POSITIONS ===
+    private val passedPawnsPool = listOf(
+        RawLesson(
+            "Square of the Pawn (e-file)",
+            "8/8/8/4P3/8/8/8/1k4K1 w - - 0 1",
+            "The Black King is outside the square! Push e5-e6 and sprint to promotion with e6-e7.",
+            "Push e6 then e7.",
+            listOf("e5e6", "b1c2", "e6e7")
+        ),
+        RawLesson(
+            "Square of the Pawn (d-file)",
+            "8/8/8/3P4/8/8/8/1k4K1 w - - 0 1",
+            "Outside the rule of the square: push d5-d6, Black King cannot catch up.",
+            "Push d6 then d7.",
+            listOf("d5d6", "b1c2", "d6d7")
+        ),
+        RawLesson(
+            "Square of the Pawn (c-file)",
+            "8/8/8/2P5/8/8/8/1k4K1 w - - 0 1",
+            "Sprint down the c-file with c5-c6! Then advance c6-c7.",
+            "Push c6 then c7.",
+            listOf("c5c6", "b1c2", "c6c7")
+        ),
+        RawLesson(
+            "Square of the Pawn (f-file)",
+            "8/8/8/5P2/8/8/8/1k4K1 w - - 0 1",
+            "Sprint down the f-file with f5-f6! Continue to promotion with f6-f7.",
+            "Push f6 then f7.",
+            listOf("f5f6", "b1c2", "f6f7")
+        ),
+        RawLesson(
+            "Outside Passed Pawn Decoy",
+            "8/8/8/P7/8/4k3/4P3/4K3 w - - 0 1",
+            "Use the outside passed pawn as a decoy: advance a5-a6, draw the King away.",
+            "Push a6 then a7.",
+            listOf("a5a6", "e3d4", "a6a7")
+        ),
+        RawLesson(
+            "Connected Passed Pawns",
+            "8/8/8/3PP3/8/4k3/8/4K3 w - - 0 1",
+            "Advance the connected pawns in tandem: e5-e6, then d5-d6.",
+            "Push e6 then d6.",
+            listOf("e5e6", "e3e4", "d5d6")
+        )
+    )
+
+    // === ENDGAME STRATEGY POSITIONS ===
+    private val endgameStrategyPool = listOf(
+        RawLesson(
+            "Mutual Zugzwang (Trebuchet)",
+            "8/8/8/4p3/3kP3/8/4K3/8 w - - 0 1",
+            "Defend your pawn with Ke2-f3! When Black retreats, step forward with Kf3-f2.",
+            "Play Kf3 then Kf2.",
+            listOf("e2f3", "d4d3", "f3f2")
+        ),
+        RawLesson(
+            "Shoulder-Charging Infiltration",
+            "8/8/8/8/3k4/4P3/8/3K4 w - - 0 1",
+            "Use your King to shoulder-charge the opponent King: Kd1-d2, then Ke2.",
+            "Play Kd2 then Ke2.",
+            listOf("d1d2", "d4e4", "d2e2")
+        ),
+        RawLesson(
+            "Triangulation Technique",
+            "8/8/8/8/3K4/4P3/8/4k3 w - - 0 1",
+            "Triangulate with your King to pass the move: Kd4-d3, then Kd3-e4.",
+            "Step Kd3 then Ke4.",
+            listOf("d4d3", "e1d1", "d3e4")
+        ),
+        RawLesson(
+            "Center King Penetration",
+            "8/8/8/3k4/8/3K4/4P3/8 w - - 0 1",
+            "Penetrate the center with Kd3-e3! Follow up by marching forward with Ke3-f3.",
+            "Play Ke3 then Kf3.",
+            listOf("d3e3", "d5e5", "e3f3")
+        ),
+        RawLesson(
+            "Rook Pawn Blockade",
+            "8/8/8/P7/8/k7/8/K7 w - - 0 1",
+            "Keep the passed pawn moving with a5-a6! When Black attacks, push a6-a7.",
+            "Advance a6 then a7.",
+            listOf("a5a6", "a3b4", "a6a7")
+        ),
+        RawLesson(
+            "Passed Pawn Support",
+            "8/8/8/4k3/8/4K3/8/8 w - - 0 1",
+            "Seize the opposition with Ke3-f3! Step to g3 to control the key flank.",
+            "Play Kf3 then Kg3.",
+            listOf("e3f3", "e5f5", "f3g3")
+        )
+    )
+
+    private val lessonCache = mutableMapOf<String, List<EndgameLesson>>()
+
+    fun getLessons(category: String): List<EndgameLesson> = lessonCache.getOrPut(category) {
         val pool = when (category) {
             "King vs King" -> kingVsKingPool
             "King + Pawn" -> kingAndPawnPool
@@ -369,23 +519,34 @@ object EndgameDatabase {
             "Queen Endgame" -> queenEndgamePool
             "Bishop Endgame" -> bishopEndgamePool
             "Knight Endgame" -> knightEndgamePool
+            "Passed Pawns" -> passedPawnsPool
+            "Endgame Strategy" -> endgameStrategyPool
             else -> kingVsKingPool
         }
 
-        return (1..100).map { level ->
+        val seenFens = mutableSetOf<String>()
+        val catPrefix = category.replace("+", "p").replace(" ", "_").lowercase()
+        (1..100).map { level ->
             val tier = when {
                 level <= 35 -> "Easy"
                 level <= 70 -> "Moderate"
                 else -> "Hard"
             }
-            val raw = pool[(level - 1) % pool.size]
-            val catPrefix = category.replace("+", "p").replace(" ", "_").lowercase()
+            val baseIndex = (level - 1) % pool.size
+            val varIndex = (level - 1) / pool.size
+            val raw = pool[baseIndex]
+            var uniqueFen = PuzzleVariationHelper.getVariation(raw.fen, raw.moves, varIndex)
+            if (uniqueFen in seenFens) {
+                val variations = PuzzleVariationHelper.getUniqueVariations(raw.fen, raw.moves, 25)
+                uniqueFen = variations.firstOrNull { it !in seenFens } ?: uniqueFen
+            }
+            seenFens.add(uniqueFen)
 
             EndgameLesson(
                 id = "e_${catPrefix}_$level",
                 title = "${raw.subtitle} • Level $level ($tier)",
                 category = category,
-                fen = raw.fen,
+                fen = uniqueFen,
                 explanation = "Level $level ($tier difficulty): ${raw.explanation}",
                 hint = raw.hint,
                 solutionMoves = raw.moves

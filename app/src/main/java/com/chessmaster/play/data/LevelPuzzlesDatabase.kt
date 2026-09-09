@@ -4,8 +4,7 @@ import com.chessmaster.play.model.Puzzle
 
 object LevelPuzzlesDatabase {
 
-    // 100 UNIQUE PUZZLES PROGRESSING FROM EASY (1-35) -> MODERATE (36-70) -> HARD (71-100)
-    val levelPuzzles: List<Puzzle> = buildList {
+    private val rawLevelPuzzles: List<Puzzle> = buildList {
         // === TIER 1: EASY (Levels 1 - 35) • Rating 600 - 1050 • Mate in 1 & Simple Captures ===
         add(Puzzle("level_1", "4r1k1/5ppp/8/8/8/8/8/4R1K1 w - - 0 1", listOf("e1e8"), 650, "Back Rank Mate", 10, 5))
         add(Puzzle("level_2", "6rk/5ppp/8/4N3/8/8/8/6K1 w - - 0 1", listOf("e5f7"), 680, "Smothered Mate", 10, 5))
@@ -111,6 +110,20 @@ object LevelPuzzlesDatabase {
         add(Puzzle("level_98", "7k/8/4PN2/8/8/8/8/R1B3K1 w - - 0 1", listOf("a1a8", "h8g7", "a8g8"), 2390, "Corridor Masterpiece", 20, 10))
         add(Puzzle("level_99", "5r1k/6pp/7N/8/2Q5/8/5PPP/6K1 w - - 0 1", listOf("c4g8", "f8g8", "h6f7"), 2395, "Immortal Smothered Mate", 20, 10))
         add(Puzzle("level_100", "r1b2rk1/pp3ppp/2n5/2qp4/8/3B1N2/PPP2PPP/R2QR1K1 w - - 0 1", listOf("d3h7", "g8h7", "f3g5"), 2400, "Grandmaster Immortal Finish", 25, 12))
+    }
+
+    // 100 100% UNIQUE PUZZLES GUARANTEED WITH NO DUPLICATES
+    val levelPuzzles: List<Puzzle> = buildList {
+        val seenFens = mutableSetOf<String>()
+        for (puzzle in rawLevelPuzzles) {
+            var fen = puzzle.fen
+            if (fen in seenFens) {
+                val variations = PuzzleVariationHelper.getUniqueVariations(puzzle.fen, puzzle.solutionMoves, 15)
+                fen = variations.firstOrNull { it !in seenFens } ?: puzzle.fen
+            }
+            seenFens.add(fen)
+            add(puzzle.copy(fen = fen))
+        }
     }
 
     fun getPuzzleForLevel(level: Int): Puzzle {

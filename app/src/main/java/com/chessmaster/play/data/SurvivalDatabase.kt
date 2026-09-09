@@ -16,7 +16,9 @@ object SurvivalDatabase {
         )
     }
 
-    fun getPuzzles(category: String): List<Puzzle> {
+    private val survivalCache = mutableMapOf<String, List<Puzzle>>()
+
+    fun getPuzzles(category: String): List<Puzzle> = survivalCache.getOrPut(category) {
         val themeCategories = when (category) {
             "Checkmate Survival" -> listOf("Mate in 1", "Mate in 2", "Smothered Mate")
             "Fork & Pin Survival" -> listOf("Fork", "Pin", "Skewer", "Double Attack")
@@ -47,32 +49,32 @@ object SurvivalDatabase {
         val hardPool = distinctPool.filter { it.rating > 1650 }.shuffled(random)
 
         val catPrefix = category.lowercase().replace(" & ", "_").replace(" ", "_")
+        val usedFens = mutableSetOf<String>()
 
         return (1..100).map { i ->
-            val (tierRating, base) = when {
-                i <= 35 -> {
-                    val r = 650 + (i * 10)
-                    val p = if (easyPool.isNotEmpty()) easyPool[(i - 1) % easyPool.size] else distinctPool[(i - 1) % distinctPool.size]
-                    r to p
-                }
-                i <= 70 -> {
-                    val r = 1100 + ((i - 35) * 15)
-                    val p = if (moderatePool.isNotEmpty()) moderatePool[(i - 36) % moderatePool.size] else distinctPool[(i - 1) % distinctPool.size]
-                    r to p
-                }
-                else -> {
-                    val r = 1700 + ((i - 70) * 20)
-                    val p = if (hardPool.isNotEmpty()) hardPool[(i - 71) % hardPool.size] else distinctPool[(i - 1) % distinctPool.size]
-                    r to p
-                }
+            val (tierRating, poolForTier) = when {
+                i <= 35 -> (650 + (i * 10)) to easyPool
+                i <= 70 -> (1100 + ((i - 35) * 15)) to moderatePool
+                else -> (1700 + ((i - 70) * 20)) to hardPool
             }
+
+            val candidate = poolForTier.firstOrNull { !usedFens.contains(it.fen) }
+                ?: distinctPool.firstOrNull { !usedFens.contains(it.fen) }
+                ?: distinctPool[(i - 1) % distinctPool.size]
+
+            var fen = candidate.fen
+            if (fen in usedFens) {
+                val variations = PuzzleVariationHelper.getUniqueVariations(candidate.fen, candidate.solutionMoves, 25)
+                fen = variations.firstOrNull { it !in usedFens } ?: candidate.fen
+            }
+            usedFens.add(fen)
 
             Puzzle(
                 id = "survival_${catPrefix}_$i",
-                fen = base.fen,
-                solutionMoves = base.solutionMoves,
+                fen = fen,
+                solutionMoves = candidate.solutionMoves,
                 rating = tierRating,
-                theme = "$category - ${base.theme.substringAfter(" - ", base.theme)}",
+                theme = "$category - ${candidate.theme.substringAfter(" - ", candidate.theme)}",
                 xpReward = 15 + (i / 10),
                 coinsReward = 8 + (i / 20)
             )
