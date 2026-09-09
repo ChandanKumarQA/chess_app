@@ -83,6 +83,20 @@ object EndgameDatabase {
             "The famous Reti endgame idea: Move Kh8-g7! Your King simultaneously threatens to escort c6 and catch Black's h-pawn.",
             "Play Kg7 to pursue both objectives at once.",
             listOf("h8g7", "h5h4", "g7f6")
+        ),
+        RawLesson(
+            "Trebuchet / Mutual Zugzwang",
+            "8/8/3k4/3p4/5K2/4P3/8/8 w - - 0 1",
+            "Penetrate with Kf4-f5! Attack the base of Black's pawn chain and force Black's King to step back.",
+            "Invade with Kf5.",
+            listOf("f4f5", "d6e7", "f5e5")
+        ),
+        RawLesson(
+            "Diagonal Infiltration",
+            "8/8/5k2/8/8/2K5/2P5/8 w - - 0 1",
+            "Infiltrate with Kc3-d4! Control the center and step into c5.",
+            "Centralize with Kd4.",
+            listOf("c3d4", "f6e6", "d4c5")
         )
     )
 
@@ -122,6 +136,20 @@ object EndgameDatabase {
             "Move your King in front of the pawn with Ke4-d5 to escort it to the 8th rank.",
             "Clear the way with Kd5.",
             listOf("e4d5", "e1d2", "e5e6")
+        ),
+        RawLesson(
+            "Protected Passed Pawn",
+            "8/8/4k3/4p3/4P3/4KP2/8/8 w - - 0 1",
+            "Challenge Black's center with f3-f4! Create an active passed pawn.",
+            "Strike with f4.",
+            listOf("f3f4", "e6f6", "f4e5")
+        ),
+        RawLesson(
+            "Pawn Breakthrough (2 vs 2)",
+            "8/8/pp6/8/PP6/8/8/4K2k w - - 0 1",
+            "Sacrifice with b4-b5! Create an outside runner with a4-a5.",
+            "Push b5 then a5.",
+            listOf("b4b5", "a6b5", "a4a5")
         )
     )
 
@@ -154,6 +182,20 @@ object EndgameDatabase {
             "Cut Black King off on the c-file! Centralize your King with Ke3-e4, then lock with Rc4-c6.",
             "Play Ke4 to seize the center.",
             listOf("e3e4", "d6e6", "c4c6")
+        ),
+        RawLesson(
+            "Fourth Rank Cut-off",
+            "8/8/4k3/8/R7/4K3/4P3/8 w - - 0 1",
+            "Advance with Ke3-e4! When Black steps back, seal the rank with Ra4-a6.",
+            "Advance Ke4 then Ra6.",
+            listOf("e3e4", "e6f6", "a4a6")
+        ),
+        RawLesson(
+            "Long Range Flank Defense",
+            "8/8/4k3/8/8/8/4K3/R7 w - - 0 1",
+            "Control the 5th rank with Ra1-a5! Cut off the enemy King from advancing.",
+            "Lift the rook with Ra5.",
+            listOf("a1a5", "e6d6", "e2e3")
         )
     )
 
@@ -243,6 +285,13 @@ object EndgameDatabase {
             "Escape the check and create counter-threats with Kd2-e2!",
             "Step to e2, then f2.",
             listOf("d2e2", "d4e4", "e2f2")
+        ),
+        RawLesson(
+            "Central Queen Dominance",
+            "8/8/8/8/4k3/3Q4/4K3/8 w - - 0 1",
+            "Centralize your Queen with Qd3-e3+! Confine the Black King to d5.",
+            "Check with Qe3, then centralize Kd3.",
+            listOf("d3e3", "e4d5", "e2d3")
         )
     )
 
@@ -261,6 +310,20 @@ object EndgameDatabase {
             "Deliver check along the diagonal with Bd3-c4+! Control key squares while centralizing your King with Ke2-e3.",
             "Check with Bc4, then centralize Ke3.",
             listOf("d3c4", "e6e5", "e2e3")
+        ),
+        RawLesson(
+            "Bishop Central Blockade",
+            "8/8/4k3/8/8/2B5/4K3/8 w - - 0 1",
+            "Blockade the central squares with Bc3-d4! Coordinate King and Bishop on dark squares.",
+            "Centralize with Bd4, then Kd3.",
+            listOf("c3d4", "e6d5", "e2d3")
+        ),
+        RawLesson(
+            "Bishop Wing Domination",
+            "8/8/2k5/8/8/3B4/2K5/8 w - - 0 1",
+            "Deliver check with Bd3-c4+! Lock the Black King on the queenside.",
+            "Play Bc4 then Kc3.",
+            listOf("d3c4", "c6c5", "c2c3")
         )
     )
 
@@ -279,6 +342,20 @@ object EndgameDatabase {
             "Reposition your Knight with Nd4-f5+! Then step back to the ideal central outpost e3.",
             "Check with Nf5+, then centralize Ne3.",
             listOf("d4f5", "d6e6", "f5e3")
+        ),
+        RawLesson(
+            "Knight Central Dominance",
+            "8/8/4k3/8/4N3/8/4K3/8 w - - 0 1",
+            "Reposition the Knight to c5! Take key squares and retreat to b3.",
+            "Play Nc5 then Nb3.",
+            listOf("e4c5", "e6d5", "c5b3")
+        ),
+        RawLesson(
+            "Knight File Barrier",
+            "8/8/3k4/8/8/3N4/4K3/8 w - - 0 1",
+            "Deploy the Knight to f4! Guard e6 and maintain a solid wall with Ke2-e3.",
+            "Play Nf4 then Ke3.",
+            listOf("d3f4", "d6e5", "e2e3")
         )
     )
 

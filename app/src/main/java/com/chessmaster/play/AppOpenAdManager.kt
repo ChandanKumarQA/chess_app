@@ -19,8 +19,7 @@ class AppOpenAdManager(private val context: Context) {
     var isShowingAd = false
     private var loadTime: Long = 0
 
-    private val adUnitId = "ca-app-pub-3940256099942544/9257395921" // TEST ID
-    // private val adUnitId = "ca-app-pub-3245577899189881/2357753334" // REAL ID
+    private val adUnitId = "ca-app-pub-8940048544519183/3561496086"
 
     fun loadAd() {
         if (isLoadingAd || isAdAvailable()) {
