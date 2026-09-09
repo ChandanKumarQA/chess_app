@@ -49,6 +49,17 @@ class AppOpenAdManager(private val context: Context) {
     }
 
     fun showAdIfAvailable(activity: Activity) {
+        // Do not show if activity is invalid or is AdActivity itself
+        if (activity.isFinishing || activity.isDestroyed || activity.javaClass.name.contains("AdActivity")) {
+            return
+        }
+
+        // Do not show if another full screen ad is currently active or was recently dismissed
+        if (!AdState.canShowAppOpenAd()) {
+            Log.d(LOG_TAG, "Cannot show App Open Ad: Another ad is showing or was recently dismissed.")
+            return
+        }
+
         if (!isAdAvailable()) {
             Log.d(LOG_TAG, "App Open Ad not ready yet. Loading...")
             loadAd()
@@ -60,17 +71,22 @@ class AppOpenAdManager(private val context: Context) {
             return
         }
 
-        appOpenAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
+        val adToShow = appOpenAd
+        appOpenAd = null
+        isShowingAd = true
+        AdState.notifyAdShowing()
+
+        adToShow?.fullScreenContentCallback = object : FullScreenContentCallback() {
             override fun onAdDismissedFullScreenContent() {
-                appOpenAd = null
                 isShowingAd = false
+                AdState.notifyAdDismissed()
                 Log.d(LOG_TAG, "App Open Ad dismissed.")
                 loadAd()
             }
 
             override fun onAdFailedToShowFullScreenContent(adError: AdError) {
-                appOpenAd = null
                 isShowingAd = false
+                AdState.notifyAdDismissed()
                 Log.d(LOG_TAG, "App Open Ad failed to show: " + adError.message)
                 loadAd()
             }
@@ -80,8 +96,7 @@ class AppOpenAdManager(private val context: Context) {
             }
         }
 
-        isShowingAd = true
-        appOpenAd?.show(activity)
+        adToShow?.show(activity)
     }
 
     private fun isAdAvailable(): Boolean {

@@ -35,6 +35,10 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Fill
 
+import com.chessmaster.play.data.BoardPreferences
+import com.chessmaster.play.model.BoardTheme
+import com.chessmaster.play.model.PieceSetId
+
 @Composable
 fun ChessBoard(
     boardState: BoardState,
@@ -45,18 +49,23 @@ fun ChessBoard(
     currentTurn: PieceColor,
     onSquareClicked: (Square) -> Unit,
     modifier: Modifier = Modifier,
-    boardStyleIndex: Int = 0,
+    boardStyleIndex: Int? = null,
+    boardTheme: BoardTheme = BoardPreferences.boardTheme.collectAsState().value,
+    pieceSet: PieceSetId = BoardPreferences.pieceSet.collectAsState().value,
     arrows: List<Pair<Square, Square>> = emptyList(),
     hintMove: Move? = null,
     handPointer: Square? = null,
     isFlipped: Boolean = false
 ) {
-    val (lightColor, darkColor) = when (boardStyleIndex) {
-        0 -> Pair(Color(0xFFF0D9B5), Color(0xFFB58863)) // Cappuccino
-        1 -> Pair(Color(0xFFE4D5B7), Color(0xFF8B5A2B)) // Walnut
-        2 -> Pair(Color(0xFFF3F3ED), Color(0xFF6F8F72)) // Classic (Greyish/Green)
-        3 -> Pair(Color(0xFFFFFFDD), Color(0xFF86A666)) // Green
-        else -> Pair(Color(0xFFF0D9B5), Color(0xFFB58863))
+    val (lightColor, darkColor) = if (boardStyleIndex != null && boardStyleIndex > 0) {
+        when (boardStyleIndex) {
+            1 -> Pair(Color(0xFFE4D5B7), Color(0xFF8B5A2B)) // Walnut
+            2 -> Pair(Color(0xFFF3F3ED), Color(0xFF6F8F72)) // Classic (Greyish/Green)
+            3 -> Pair(Color(0xFFFFFFDD), Color(0xFF86A666)) // Green
+            else -> Pair(boardTheme.lightColor, boardTheme.darkColor)
+        }
+    } else {
+        Pair(boardTheme.lightColor, boardTheme.darkColor)
     }
     val selectedColor = Color(0x66000000)
     val legalMoveColor = Color(0x33000000)
@@ -266,7 +275,7 @@ fun ChessBoard(
                         .offset { IntOffset(finalOffset.x.roundToInt(), finalOffset.y.roundToInt()) }
                         .padding(4.dp)
                 ) {
-                    ChessPiece(piece = piece, modifier = Modifier.fillMaxSize())
+                    ChessPiece(piece = piece, modifier = Modifier.fillMaxSize(), pieceSet = pieceSet)
                 }
             }
         }

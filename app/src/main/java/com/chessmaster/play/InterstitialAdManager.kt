@@ -51,32 +51,39 @@ class InterstitialAdManager(private val context: Context) {
     }
 
     fun showAd(activity: Activity, onAdDismissed: () -> Unit) {
+        if (activity.isFinishing || activity.isDestroyed || AdState.isFullScreenAdShowing) {
+            Log.d("InterstitialAdManager", "Activity is finishing, destroyed, or another ad is showing.")
+            onAdDismissed()
+            return
+        }
+
         if (interstitialAd != null) {
-            interstitialAd?.fullScreenContentCallback = object: FullScreenContentCallback() {
+            val adToShow = interstitialAd
+            interstitialAd = null
+            AdState.notifyAdShowing()
+
+            adToShow?.fullScreenContentCallback = object : FullScreenContentCallback() {
                 override fun onAdDismissedFullScreenContent() {
                     Log.d("InterstitialAdManager", "Ad was dismissed.")
-                    interstitialAd = null
-                    // Preload the next ad
+                    AdState.notifyAdDismissed()
                     loadAd()
                     onAdDismissed()
                 }
 
                 override fun onAdFailedToShowFullScreenContent(adError: AdError) {
                     Log.d("InterstitialAdManager", "Ad failed to show: $adError")
-                    interstitialAd = null
+                    AdState.notifyAdDismissed()
                     onAdDismissed()
                 }
 
                 override fun onAdShowedFullScreenContent() {
                     Log.d("InterstitialAdManager", "Ad showed fullscreen content.")
-                    interstitialAd = null
                 }
             }
-            interstitialAd?.show(activity)
+            adToShow?.show(activity)
         } else {
             Log.d("InterstitialAdManager", "The interstitial ad wasn't ready yet.")
             onAdDismissed()
-            // Try to load one for next time
             loadAd()
         }
     }

@@ -18,7 +18,10 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material3.*
+import com.chessmaster.play.ui.components.adventure.AdventureLevelMap
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,9 +55,15 @@ fun SurvivalModeScreen(onBack: () -> Unit) {
     var gameState by remember { mutableStateOf(SurvivalState.LEVEL_SELECTION) }
     var selectedCategory by remember { mutableStateOf<String?>(null) }
     var currentLevelIndex by remember { mutableIntStateOf(0) }
+    var highestUnlockedLevel by remember { mutableIntStateOf(1) }
+    var isGridView by remember { mutableStateOf(false) }
 
     val darkBg = MaterialTheme.colorScheme.background
     val context = LocalContext.current
+
+    LaunchedEffect(gameState, selectedCategory) {
+        highestUnlockedLevel = LocalLeaderboardManager.getHighestUnlockedSurvivalLevel(context)
+    }
     val activity = context as? Activity
     val interstitialAdManager = remember { InterstitialAdManager(context) }
     val cardBg = MaterialTheme.colorScheme.surfaceVariant
@@ -89,8 +98,8 @@ fun SurvivalModeScreen(onBack: () -> Unit) {
                                         title = category,
                                         difficulty = "100 Levels • 3 Lives",
                                         puzzleCount = 100,
-                                        completion = 0,
-                                        bestScore = 0,
+                                        completion = ((highestUnlockedLevel - 1).coerceAtLeast(0) * 100) / 100,
+                                        bestScore = highestUnlockedLevel,
                                         cardBg = cardBg,
                                         textPrimary = textPrimary,
                                         textSecondary = textSecondary,
@@ -104,95 +113,152 @@ fun SurvivalModeScreen(onBack: () -> Unit) {
                             }
                         }
                     } else {
-                        // 100 Levels grid for selected category
+                        // Level selection for selected category
                         val easyLevels = (1..35).toList()
                         val moderateLevels = (36..70).toList()
                         val hardLevels = (71..100).toList()
 
                         Column(modifier = Modifier.fillMaxSize()) {
                             Row(
-                                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 12.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 IconButton(onClick = { selectedCategory = null }) {
                                     Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
                                 }
-                                Column(modifier = Modifier.padding(start = 8.dp)) {
-                                    Text(selectedCategory!!, color = textPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                                    Text("100 LEVELS • SURVIVAL CHALLENGE", color = accentColor, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Column(modifier = Modifier.weight(1f).padding(start = 8.dp)) {
+                                    Text(selectedCategory!!, color = textPrimary, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                                    Text(
+                                        text = "Level $highestUnlockedLevel / 100 • 3 Lives Survival",
+                                        color = Color(0xFF81C784),
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+
+                                IconButton(
+                                    onClick = { isGridView = !isGridView },
+                                    modifier = Modifier
+                                        .size(38.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(Color(0xFF1E2A20))
+                                ) {
+                                    Icon(
+                                        imageVector = if (isGridView) Icons.Default.Map else Icons.Default.GridView,
+                                        contentDescription = "Toggle View",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(20.dp)
+                                    )
                                 }
                             }
 
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .weight(1f)
-                                    .padding(horizontal = 16.dp)
-                            ) {
-                                LazyVerticalGrid(
-                                    columns = GridCells.Fixed(5),
-                                    contentPadding = PaddingValues(bottom = 24.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                                    modifier = Modifier.fillMaxSize()
+                            if (!isGridView) {
+                                // Adventure Journey Map View
+                                AdventureLevelMap(
+                                    totalLevels = 100,
+                                    highestUnlockedLevel = highestUnlockedLevel,
+                                    scoreOrXpText = "3 ❤️ LIVES",
+                                    ratingSubtitle = "Level $highestUnlockedLevel / 100",
+                                    onSelectLevel = { level ->
+                                        currentLevelIndex = level - 1
+                                        gameState = SurvivalState.PLAYING
+                                    },
+                                    onPlayCurrentLevel = {
+                                        currentLevelIndex = (highestUnlockedLevel - 1).coerceIn(0, 99)
+                                        gameState = SurvivalState.PLAYING
+                                    },
+                                    onToggleGridView = { isGridView = true },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .weight(1f)
+                                )
+                            } else {
+                                // 100 Levels grid
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .weight(1f)
+                                        .padding(horizontal = 16.dp)
                                 ) {
-                                    // === EASY SECTION ===
-                                    item(span = { GridItemSpan(maxLineSpan) }) {
-                                        PuzzleTierHeader(
-                                            title = "EASY",
-                                            subtitle = "Levels 1 - 35 • Rating 600 - 1050",
-                                            badgeColor = Color(0xFF00C853)
-                                        )
-                                    }
-                                    items(easyLevels) { level ->
-                                        LevelBox(
-                                            level = level,
-                                            activeColor = Color(0xFF00C853),
-                                            onClick = {
-                                                currentLevelIndex = level - 1
-                                                gameState = SurvivalState.PLAYING
-                                            }
-                                        )
-                                    }
+                                    LazyVerticalGrid(
+                                        columns = GridCells.Fixed(5),
+                                        contentPadding = PaddingValues(bottom = 24.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                                        modifier = Modifier.fillMaxSize()
+                                    ) {
+                                        // === EASY SECTION ===
+                                        item(span = { GridItemSpan(maxLineSpan) }) {
+                                            PuzzleTierHeader(
+                                                title = "EASY",
+                                                subtitle = "Levels 1 - 35 • Rating 600 - 1050",
+                                                badgeColor = Color(0xFF00C853)
+                                            )
+                                        }
+                                        items(easyLevels) { level ->
+                                            LevelBox(
+                                                level = level,
+                                                isCompleted = level < highestUnlockedLevel,
+                                                isCurrent = level == highestUnlockedLevel,
+                                                activeColor = Color(0xFF00C853),
+                                                onClick = {
+                                                    if (level <= highestUnlockedLevel) {
+                                                        currentLevelIndex = level - 1
+                                                        gameState = SurvivalState.PLAYING
+                                                    }
+                                                }
+                                            )
+                                        }
 
-                                    // === MODERATE SECTION ===
-                                    item(span = { GridItemSpan(maxLineSpan) }) {
-                                        Spacer(modifier = Modifier.height(16.dp))
-                                        PuzzleTierHeader(
-                                            title = "MODERATE",
-                                            subtitle = "Levels 36 - 70 • Rating 1100 - 1650",
-                                            badgeColor = Color(0xFFFFB300)
-                                        )
-                                    }
-                                    items(moderateLevels) { level ->
-                                        LevelBox(
-                                            level = level,
-                                            activeColor = Color(0xFFFFB300),
-                                            onClick = {
-                                                currentLevelIndex = level - 1
-                                                gameState = SurvivalState.PLAYING
-                                            }
-                                        )
-                                    }
+                                        // === MODERATE SECTION ===
+                                        item(span = { GridItemSpan(maxLineSpan) }) {
+                                            Spacer(modifier = Modifier.height(16.dp))
+                                            PuzzleTierHeader(
+                                                title = "MODERATE",
+                                                subtitle = "Levels 36 - 70 • Rating 1100 - 1650",
+                                                badgeColor = Color(0xFFFFB300)
+                                            )
+                                        }
+                                        items(moderateLevels) { level ->
+                                            LevelBox(
+                                                level = level,
+                                                isCompleted = level < highestUnlockedLevel,
+                                                isCurrent = level == highestUnlockedLevel,
+                                                activeColor = Color(0xFFFFB300),
+                                                onClick = {
+                                                    if (level <= highestUnlockedLevel) {
+                                                        currentLevelIndex = level - 1
+                                                        gameState = SurvivalState.PLAYING
+                                                    }
+                                                }
+                                            )
+                                        }
 
-                                    // === HARD SECTION ===
-                                    item(span = { GridItemSpan(maxLineSpan) }) {
-                                        Spacer(modifier = Modifier.height(16.dp))
-                                        PuzzleTierHeader(
-                                            title = "HARD",
-                                            subtitle = "Levels 71 - 100 • Rating 1700 - 2400",
-                                            badgeColor = Color(0xFFE53935)
-                                        )
-                                    }
-                                    items(hardLevels) { level ->
-                                        LevelBox(
-                                            level = level,
-                                            activeColor = Color(0xFFE53935),
-                                            onClick = {
-                                                currentLevelIndex = level - 1
-                                                gameState = SurvivalState.PLAYING
-                                            }
-                                        )
+                                        // === HARD SECTION ===
+                                        item(span = { GridItemSpan(maxLineSpan) }) {
+                                            Spacer(modifier = Modifier.height(16.dp))
+                                            PuzzleTierHeader(
+                                                title = "HARD",
+                                                subtitle = "Levels 71 - 100 • Rating 1700 - 2400",
+                                                badgeColor = Color(0xFFE53935)
+                                            )
+                                        }
+                                        items(hardLevels) { level ->
+                                            LevelBox(
+                                                level = level,
+                                                isCompleted = level < highestUnlockedLevel,
+                                                isCurrent = level == highestUnlockedLevel,
+                                                activeColor = Color(0xFFE53935),
+                                                onClick = {
+                                                    if (level <= highestUnlockedLevel) {
+                                                        currentLevelIndex = level - 1
+                                                        gameState = SurvivalState.PLAYING
+                                                    }
+                                                }
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -235,24 +301,46 @@ fun SurvivalModeScreen(onBack: () -> Unit) {
 @Composable
 private fun LevelBox(
     level: Int,
+    isCompleted: Boolean,
+    isCurrent: Boolean,
     activeColor: Color,
     onClick: () -> Unit
 ) {
+    val completedBg = Color(0xFF4E342E)
+    val bgColor = when {
+        isCompleted -> completedBg
+        isCurrent -> activeColor
+        else -> Color(0xFF1E293B)
+    }
+
     Box(
         modifier = Modifier
             .aspectRatio(1f)
             .clip(RoundedCornerShape(8.dp))
-            .background(Color(0xFF1E293B))
-            .border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(8.dp))
+            .background(bgColor)
+            .border(
+                1.dp,
+                if (isCurrent) activeColor else Color.White.copy(alpha = 0.15f),
+                RoundedCornerShape(8.dp)
+            )
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = level.toString(),
-            color = Color.White.copy(alpha = 0.9f),
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold
-        )
+        if (isCompleted) {
+            Icon(
+                Icons.Default.Check,
+                contentDescription = "Completed",
+                tint = activeColor,
+                modifier = Modifier.size(24.dp)
+            )
+        } else {
+            Text(
+                text = level.toString(),
+                color = if (isCurrent) Color.White else Color.White.copy(alpha = 0.9f),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
 }
 

@@ -23,7 +23,16 @@ import com.chessmaster.play.model.BoardState
 import com.chessmaster.play.model.PieceColor
 import com.chessmaster.play.ui.components.ChessBoard
 
+import androidx.activity.compose.BackHandler
+import com.chessmaster.play.data.BoardPreferences
 import com.chessmaster.play.viewmodel.ChessViewModel
+
+enum class SettingsSubScreen {
+    MAIN,
+    BOARD_SETTINGS,
+    BOARD_THEME_PICKER,
+    PIECE_SET_PICKER
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,179 +42,149 @@ fun SettingsScreen(
     onNavigateToAnalysis: () -> Unit = {},
     onNavigateToClock: () -> Unit = {}
 ) {
-    val backgroundColor = MaterialTheme.colorScheme.background
-    val topBarColor = MaterialTheme.colorScheme.surface
-    val textColor = MaterialTheme.colorScheme.onBackground
-    val secondaryTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-    val iconColor = MaterialTheme.colorScheme.onSurfaceVariant
-    
-    val themeDark by viewModel.isDarkMode.collectAsState()
-    val sounds by viewModel.sounds.collectAsState()
-    val soundsPieceMove by viewModel.soundsPieceMove.collectAsState()
-    val music by viewModel.music.collectAsState()
-    val musicTrack by viewModel.musicTrack.collectAsState()
-    val musicGame by viewModel.musicGame.collectAsState()
-    val musicPuzzles by viewModel.musicPuzzles.collectAsState()
-    val vibrations by viewModel.vibrations.collectAsState()
-    
-    val chessboardStyles = listOf("Cappuccino", "Walnut", "Classic", "Green")
-    val chessboardStyleIndex by viewModel.chessboardStyleIndex.collectAsState()
-    val pieceStyles = listOf("Alexander", "Staunton", "Neo", "Wood")
-    val pieceStyleIndex by viewModel.pieceStyleIndex.collectAsState()
+    var subScreen by remember { mutableStateOf(SettingsSubScreen.MAIN) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { 
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Settings, contentDescription = null, tint = textColor)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Settings", color = textColor, fontWeight = FontWeight.Bold)
-                    }
+    BackHandler(enabled = subScreen != SettingsSubScreen.MAIN) {
+        subScreen = when (subScreen) {
+            SettingsSubScreen.BOARD_THEME_PICKER, SettingsSubScreen.PIECE_SET_PICKER -> SettingsSubScreen.BOARD_SETTINGS
+            SettingsSubScreen.BOARD_SETTINGS -> SettingsSubScreen.MAIN
+            SettingsSubScreen.MAIN -> SettingsSubScreen.MAIN
+        }
+    }
+
+    when (subScreen) {
+        SettingsSubScreen.BOARD_SETTINGS -> {
+            BoardSettingsScreen(
+                onBack = { subScreen = SettingsSubScreen.MAIN },
+                onNavigateToBoardPicker = { subScreen = SettingsSubScreen.BOARD_THEME_PICKER },
+                onNavigateToPieceSetPicker = { subScreen = SettingsSubScreen.PIECE_SET_PICKER }
+            )
+        }
+        SettingsSubScreen.BOARD_THEME_PICKER -> {
+            BoardThemePickerScreen(
+                onBack = { subScreen = SettingsSubScreen.BOARD_SETTINGS }
+            )
+        }
+        SettingsSubScreen.PIECE_SET_PICKER -> {
+            PieceSetPickerScreen(
+                onBack = { subScreen = SettingsSubScreen.BOARD_SETTINGS }
+            )
+        }
+        SettingsSubScreen.MAIN -> {
+            val backgroundColor = MaterialTheme.colorScheme.background
+            val topBarColor = MaterialTheme.colorScheme.surface
+            val textColor = MaterialTheme.colorScheme.onBackground
+            val secondaryTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+            val iconColor = MaterialTheme.colorScheme.onSurfaceVariant
+            
+            val themeDark by viewModel.isDarkMode.collectAsState()
+            val sounds by viewModel.sounds.collectAsState()
+            val vibrations by viewModel.vibrations.collectAsState()
+            val currentTheme by BoardPreferences.boardTheme.collectAsState()
+            val currentPieceSet by BoardPreferences.pieceSet.collectAsState()
+
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = { 
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.Settings, contentDescription = null, tint = textColor)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Settings", color = textColor, fontWeight = FontWeight.Bold)
+                            }
+                        },
+                        navigationIcon = {
+                            IconButton(onClick = onBack) {
+                                Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = androidx.compose.ui.graphics.Color.White)
+                            }
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(containerColor = topBarColor)
+                    )
                 },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = androidx.compose.ui.graphics.Color.White)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = topBarColor)
-            )
-        },
-        containerColor = backgroundColor
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-        ) {
-            // Tools Section
-            SectionHeader("Tools")
-
-            SettingsItemRow(
-                icon = Icons.Default.Analytics,
-                title = "Analysis Board",
-                isToggle = false,
-                textColor = textColor,
-                secondaryTextColor = secondaryTextColor,
-                iconColor = iconColor,
-                onClick = onNavigateToAnalysis
-            )
-
-            SettingsItemRow(
-                icon = Icons.Default.Schedule,
-                title = "Clock",
-                isToggle = false,
-                textColor = textColor,
-                secondaryTextColor = secondaryTextColor,
-                iconColor = iconColor,
-                onClick = onNavigateToClock
-            )
-
-            Divider(color = MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.padding(vertical = 8.dp))
-
-            // General Section
-            SectionHeader("General")
-            
-            SettingsItemRow(
-                icon = Icons.Default.BrightnessMedium,
-                title = "Theme",
-                subtitle = if (themeDark) "Dark" else "Light",
-                isToggle = false,
-                textColor = textColor,
-                secondaryTextColor = secondaryTextColor,
-                iconColor = iconColor,
-                onClick = { viewModel.setDarkMode(!themeDark) }
-            )
-            
-            SettingsToggleRow(
-                icon = Icons.Default.MusicNote,
-                title = "Sound",
-                checked = sounds,
-                textColor = textColor,
-                iconColor = iconColor,
-                onCheckedChange = { viewModel.setSounds(it) }
-            )
-            
-            SettingsToggleRow(
-                icon = Icons.Default.Vibration,
-                title = "Vibrations",
-                checked = vibrations,
-                textColor = textColor,
-                iconColor = iconColor,
-                onCheckedChange = { viewModel.setVibrations(it) }
-            )
-            
-            Divider(color = MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.padding(vertical = 8.dp))
-            
-            // Chessboard and Pieces Section
-            SectionHeader("Chessboard and Pieces")
-            
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
+                containerColor = backgroundColor
+            ) { paddingValues ->
                 Column(
                     modifier = Modifier
-                        .weight(1f)
-                        .clip(RoundedCornerShape(8.dp))
-                        .clickable { viewModel.setChessboardStyleIndex((chessboardStyleIndex + 1) % chessboardStyles.size) }
-                        .padding(8.dp)
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .verticalScroll(rememberScrollState())
                 ) {
-                    Text("Chessboard", color = secondaryTextColor, fontSize = 12.sp, modifier = Modifier.align(Alignment.CenterHorizontally))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(chessboardStyles[chessboardStyleIndex], color = textColor, fontWeight = FontWeight.Bold)
-                        Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = iconColor)
-                    }
-                }
-                
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(RoundedCornerShape(8.dp))
-                        .clickable { viewModel.setPieceStyleIndex((pieceStyleIndex + 1) % pieceStyles.size) }
-                        .padding(8.dp)
-                ) {
-                    Text("Pieces", color = secondaryTextColor, fontSize = 12.sp, modifier = Modifier.align(Alignment.CenterHorizontally))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(pieceStyles[pieceStyleIndex], color = textColor, fontWeight = FontWeight.Bold)
-                        Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = iconColor)
-                    }
+                    // Board Settings Section (Screenshots 1 & 3)
+                    SectionHeader("Display & Board")
+
+                    SettingsItemRow(
+                        icon = Icons.Default.Palette,
+                        title = "Board settings",
+                        subtitle = "${currentTheme.name} • ${currentPieceSet.displayName}",
+                        isToggle = false,
+                        textColor = textColor,
+                        secondaryTextColor = secondaryTextColor,
+                        iconColor = iconColor,
+                        onClick = { subScreen = SettingsSubScreen.BOARD_SETTINGS }
+                    )
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.padding(vertical = 8.dp))
+
+                    // Tools Section
+                    SectionHeader("Tools")
+
+                    SettingsItemRow(
+                        icon = Icons.Default.Analytics,
+                        title = "Analysis Board",
+                        isToggle = false,
+                        textColor = textColor,
+                        secondaryTextColor = secondaryTextColor,
+                        iconColor = iconColor,
+                        onClick = onNavigateToAnalysis
+                    )
+
+                    SettingsItemRow(
+                        icon = Icons.Default.Schedule,
+                        title = "Clock",
+                        isToggle = false,
+                        textColor = textColor,
+                        secondaryTextColor = secondaryTextColor,
+                        iconColor = iconColor,
+                        onClick = onNavigateToClock
+                    )
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.padding(vertical = 8.dp))
+
+                    // General Section
+                    SectionHeader("General")
+                    
+                    SettingsItemRow(
+                        icon = Icons.Default.BrightnessMedium,
+                        title = "Theme",
+                        subtitle = if (themeDark) "Dark" else "Light",
+                        isToggle = false,
+                        textColor = textColor,
+                        secondaryTextColor = secondaryTextColor,
+                        iconColor = iconColor,
+                        onClick = { viewModel.setDarkMode(!themeDark) }
+                    )
+                    
+                    SettingsToggleRow(
+                        icon = Icons.Default.MusicNote,
+                        title = "Sound",
+                        checked = sounds,
+                        textColor = textColor,
+                        iconColor = iconColor,
+                        onCheckedChange = { viewModel.setSounds(it) }
+                    )
+                    
+                    SettingsToggleRow(
+                        icon = Icons.Default.Vibration,
+                        title = "Vibrations",
+                        checked = vibrations,
+                        textColor = textColor,
+                        iconColor = iconColor,
+                        onCheckedChange = { viewModel.setVibrations(it) }
+                    )
+
+                    Spacer(modifier = Modifier.height(32.dp))
                 }
             }
-            
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(topBarColor)
-                    .padding(16.dp)
-            ) {
-                val dummyBoard = BoardState.initial()
-                ChessBoard(
-                    boardState = dummyBoard,
-                    selectedSquare = null,
-                    legalMoves = emptyList(),
-                    lastMove = null,
-                    isCheck = false,
-                    currentTurn = PieceColor.WHITE,
-                    onSquareClicked = { },
-                    modifier = Modifier.fillMaxWidth().aspectRatio(1f)
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }

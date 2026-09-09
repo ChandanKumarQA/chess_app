@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <style name="Theme.Chess" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <!-- Opaque Fullscreen Theme for AdActivity to prevent app screen from showing behind ads -->
+    <style name="AdTheme" parent="android:Theme.Black.NoTitleBar.Fullscreen">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:colorBackground">@android:color/black</item>
+        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:windowDisablePreview">true</item>
+    </style>
 </resources>

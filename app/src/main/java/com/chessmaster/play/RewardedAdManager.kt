@@ -39,39 +39,46 @@ class RewardedAdManager(private val context: Context) {
                     Log.d("RewardedAdManager", "Ad was loaded.")
                     rewardedAd = ad
                     isLoading = false
-                    
-                    rewardedAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
-                        override fun onAdDismissedFullScreenContent() {
-                            Log.d("RewardedAdManager", "Ad was dismissed.")
-                            rewardedAd = null
-                            loadAd() // Preload the next ad
-                        }
-
-                        override fun onAdFailedToShowFullScreenContent(adError: AdError) {
-                            Log.d("RewardedAdManager", "Ad failed to show.")
-                            rewardedAd = null
-                        }
-
-                        override fun onAdShowedFullScreenContent() {
-                            Log.d("RewardedAdManager", "Ad showed fullscreen content.")
-                        }
-                    }
                 }
             }
         )
     }
 
     fun showAd(activity: Activity, onRewardEarned: (Int) -> Unit) {
+        if (activity.isFinishing || activity.isDestroyed || AdState.isFullScreenAdShowing) {
+            Log.d("RewardedAdManager", "Cannot show ad: Activity invalid or another ad is showing.")
+            return
+        }
+
         if (rewardedAd != null) {
-            rewardedAd?.show(activity) { rewardItem ->
-                // Handle the reward
+            val adToShow = rewardedAd
+            rewardedAd = null
+            AdState.notifyAdShowing()
+
+            adToShow?.fullScreenContentCallback = object : FullScreenContentCallback() {
+                override fun onAdDismissedFullScreenContent() {
+                    Log.d("RewardedAdManager", "Ad was dismissed.")
+                    AdState.notifyAdDismissed()
+                    loadAd() // Preload the next ad
+                }
+
+                override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                    Log.d("RewardedAdManager", "Ad failed to show: $adError")
+                    AdState.notifyAdDismissed()
+                }
+
+                override fun onAdShowedFullScreenContent() {
+                    Log.d("RewardedAdManager", "Ad showed fullscreen content.")
+                }
+            }
+
+            adToShow?.show(activity) { rewardItem ->
                 onRewardEarned(rewardItem.amount)
                 Log.d("RewardedAdManager", "User earned the reward.")
             }
         } else {
             Log.d("RewardedAdManager", "The rewarded ad wasn't ready yet.")
             android.widget.Toast.makeText(activity, "Ad is loading, please try again in a few seconds...", android.widget.Toast.LENGTH_SHORT).show()
-            // Try loading again
             loadAd()
         }
     }
