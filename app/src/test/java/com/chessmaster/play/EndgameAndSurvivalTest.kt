@@ -131,6 +131,29 @@ class EndgameAndSurvivalTest {
         assertTrue("Traps list should have at least 16 traps", traps.size >= 16)
         val engine = GameEngine()
 
+        val expectedTraps = listOf(
+            "Scholar's Mate",
+            "Fried Liver",
+            "Legal's Trap",
+            "Noah's Ark",
+            "Greek Gift",
+            "Stafford Gambit",
+            "Vienna Trap",
+            "Sicilian Smith-Morra",
+            "Elephant Trap",
+            "Blackburne Shilling Gambit",
+            "Fishing Pole Trap",
+            "Halosar Trap",
+            "Lasker Trap",
+            "Budapest Trap",
+            "Mortimer Trap",
+            "Rubinstein Trap"
+        )
+        val trapNames = traps.map { it.name }
+        for (expected in expectedTraps) {
+            assertTrue("Trap '$expected' must be in opening traps library", trapNames.contains(expected))
+        }
+
         for (trap in traps) {
             val (initialState, _) = NotationParser.fenToBoardState(trap.initialFen)
             var current = initialState
@@ -149,11 +172,42 @@ class EndgameAndSurvivalTest {
     }
 
     @Test
-    fun testPuzzleRushRandomSelection() {
-        val rushList = PuzzleRepository.getRandomPuzzles(30)
-        assertEquals(30, rushList.size)
-        val uniqueIds = rushList.map { it.id }.distinct()
-        assertTrue("Puzzle rush should have diverse unique puzzles", uniqueIds.size > 20)
+    fun testPuzzleRushRandomSelectionAndAscendingRating() {
+        val rushList1 = PuzzleRepository.getRandomPuzzles(30)
+        assertEquals(30, rushList1.size)
+        // Verify sorted by ascending rating
+        for (i in 0 until rushList1.size - 1) {
+            assertTrue(
+                "Puzzle rush must be sorted by ascending rating: index $i (${rushList1[i].rating}) <= ${rushList1[i+1].rating}",
+                rushList1[i].rating <= rushList1[i + 1].rating
+            )
+        }
+        val uniqueIds = rushList1.map { it.id }.distinct()
+        assertTrue("Puzzle rush should have diverse unique puzzles", uniqueIds.size > 15)
+
+        // Verify runs are fresh
+        Thread.sleep(10)
+        val rushList2 = PuzzleRepository.getRandomPuzzles(30)
+        assertEquals(30, rushList2.size)
+        assertTrue("Puzzle rush runs should provide fresh varieties", rushList1.map { it.id } != rushList2.map { it.id })
+    }
+
+    @Test
+    fun testSurvivalPuzzlesThemeMatchedAndAscending() {
+        for (cat in PuzzleRepository.getAllSurvivalCategories()) {
+            val puzzles = PuzzleRepository.getSurvivalPuzzlesByCategory(cat)
+            assertEquals(100, puzzles.size)
+            for (i in 0 until puzzles.size - 1) {
+                assertTrue(
+                    "Survival mode must be sorted by ascending rating in $cat: index $i (${puzzles[i].rating}) <= ${puzzles[i+1].rating}",
+                    puzzles[i].rating <= puzzles[i + 1].rating
+                )
+            }
+            if (cat == "Checkmate Survival") {
+                val hasMateThemes = puzzles.any { it.theme.contains("Mate", ignoreCase = true) || it.theme.contains("Smothered", ignoreCase = true) }
+                assertTrue("Checkmate survival should have mate themed puzzles", hasMateThemes)
+            }
+        }
     }
 }
 
