@@ -209,5 +209,46 @@ class EndgameAndSurvivalTest {
             }
         }
     }
+
+    @Test
+    fun testLevelPuzzlesLegalityAndGrading() {
+        val levelPuzzles = PuzzleRepository.levelPuzzles
+        assertEquals("Level puzzles must have 100 puzzles", 100, levelPuzzles.size)
+
+        val engine = GameEngine()
+        val errors = mutableListOf<String>()
+
+        for ((index, puzzle) in levelPuzzles.withIndex()) {
+            val levelNum = index + 1
+            assertEquals("level_$levelNum", puzzle.id)
+            assertTrue("Solution moves must not be empty", puzzle.solutionMoves.isNotEmpty())
+
+            when {
+                levelNum <= 35 -> assertTrue("Level $levelNum rating ${puzzle.rating} should be Easy (600..1050)", puzzle.rating in 600..1050)
+                levelNum <= 70 -> assertTrue("Level $levelNum rating ${puzzle.rating} should be Moderate (1100..1650)", puzzle.rating in 1100..1650)
+                else -> assertTrue("Level $levelNum rating ${puzzle.rating} should be Hard (1700..2400)", puzzle.rating in 1700..2400)
+            }
+
+            val (initialState, _) = NotationParser.fenToBoardState(puzzle.fen)
+            var current = initialState
+            for (m in puzzle.solutionMoves) {
+                val from = Square(m[0] - 'a', m[1] - '1')
+                val to = Square(m[2] - 'a', m[3] - '1')
+                val legals = engine.getLegalMoves(current, from)
+                val found = legals.find { it.to == to }
+                if (found == null) {
+                    errors.add("Level $levelNum (${puzzle.theme}) move $m illegal from FEN: ${puzzle.fen}")
+                    break
+                }
+                current = current.copyWithMove(found)
+            }
+        }
+
+        if (errors.isNotEmpty()) {
+            errors.forEach { println(it) }
+            assertTrue("Errors in level puzzles:\n${errors.joinToString("\n")}", errors.isEmpty())
+        }
+    }
 }
+
 
