@@ -161,4 +161,13 @@ object TacticalDatabase {
             )
         }
     }
+
+    fun getAllCategories(): List<String> {
+        return listOf(
+            "Mate in 1", "Mate in 2", "Fork", "Pin", "Skewer",
+            "Double Attack", "Discovered Attack", "Smothered Mate",
+            "Sacrifice", "Attraction", "Deflection", "Clearance",
+            "Winning Material"
+        )
+    }
 }

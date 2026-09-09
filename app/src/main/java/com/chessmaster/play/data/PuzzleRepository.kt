@@ -119,27 +119,6 @@ object PuzzleRepository {
         add(Puzzle("level_100", "r1b2rk1/pp3ppp/8/2qp4/8/3B1N2/PPP2PPP/R2QR1K1 w - - 0 1", listOf("d3h7", "g8h8", "f3g5"), 2400, "Grandmaster Finish", 25, 12))
     }
 
-    private val allTraps = listOf(
-        OpeningTrap("ot_scholar_1", "Scholar's Mate", "A quick 4-move checkmate targeting f7.", listOf("e2e4", "e7e5", "d1h5", "b8c6", "f1c4", "g8f6", "h5f7"), 5, "Nf6 is a mistake when Bc4 and Qh5 are attacking f7."),
-        OpeningTrap("ot_fried_1", "Fried Liver", "An aggressive attack starting from the Italian Game.", listOf("e2e4", "e7e5", "g1f3", "b8c6", "f1c4", "g8f6", "f3g5", "d7d5", "e4d5", "f6d5", "g5f7"), 9, "Nxd5 allows the powerful Knight sacrifice on f7."),
-        OpeningTrap("ot_legal_1", "Legal's Trap", "A beautiful Queen sacrifice.", listOf("e2e4", "e7e5", "g1f3", "b8c6", "f1c4", "d7d6", "b1c3", "c8g4", "h2h3", "g4h5", "f3e5", "h5d1", "c4f7", "e8e7", "c3d5"), 11, "Taking the Queen leads to a forced mate."),
-        OpeningTrap("ot_noah_1", "Noah's Ark", "Trap the bishop.", listOf("e2e4", "e7e5", "g1f3", "b8c6", "f1b5", "a7a6", "b5a4", "d7d6", "d2d4", "b7b5", "a4b3", "c6d4", "f3d4", "e5d4", "d1d4", "c7c5"), 5, "Trap the bishop."),
-        OpeningTrap("ot_greek_1", "Greek Gift", "Sacrifice on h7.", listOf("e2e4", "e7e6", "d2d4", "d7d5", "b1c3", "g8f6", "e4e5", "f6d7", "f1d3", "c7c5", "g1f3", "b8c6", "e1g1", "c5d4", "c3b5", "d7e5", "f3e5", "c6e5", "c1f4", "e5d3", "b5c7"), 5, "Sacrifice on h7."),
-        OpeningTrap("ot_stafford_1", "Stafford Gambit", "Tricky knight moves.", listOf("e2e4", "e7e5", "g1f3", "g8f6", "f3e5", "b8c6", "e5c6", "d7c6"), 5, "Develop the pieces."),
-        OpeningTrap("ot_vienna_1", "Vienna Trap", "Copycat trap.", listOf("e2e4", "e7e5", "b1c3", "g8f6", "f1c4", "f6e4", "c3e4", "d7d5"), 5, "Fork the pieces."),
-        OpeningTrap("ot_sicilian_1", "Sicilian Smith-Morra", "Smith-Morra trick.", listOf("e2e4", "c7c5", "d2d4", "c5d4", "c2c3", "d4c3", "b1c3", "b8c6", "g1f3", "d7d6", "f1c4", "e7e6", "e1g1", "g8f6", "d1e2", "f8e7", "f1d1", "e6e5", "c1g5", "c8g4"), 5, "Watch out for d5."),
-        OpeningTrap("ot_elephant_1", "Elephant Trap", "Black traps White into taking on d5 in the QGD.", listOf("d2d4", "d7d5", "c2c4", "e7e6", "b1c3", "g8f6", "c1g5", "b8d7", "c4d5", "e6d5", "c3d5", "f6d5", "g5d8", "f8b4", "d1d2", "b4d2", "e1d2", "e8d8"), 9, "Bxd8 allows the devastating Bb4+ check."),
-        OpeningTrap("ot_blackburne_1", "Blackburne Shilling Gambit", "A sneaky knight move sets up a smothered mate.", listOf("e2e4", "e7e5", "g1f3", "b8c6", "f1c4", "c6d4", "f3e5", "d8g5", "e5f7", "g5g2", "h1f1", "g2e4", "c4e2", "d4f3"), 7, "Nd4 leaves e5 as poisoned bait."),
-        OpeningTrap("ot_fishing_1", "Fishing Pole Trap", "Opening the h-file with a piece sacrifice.", listOf("e2e4", "e7e5", "g1f3", "b8c6", "f1b5", "g8f6", "e1g1", "f6g4", "h2h3", "h7h5", "h3g4", "h5g4", "f3e1", "d8h4"), 7, "Taking on g4 opens the lethal h-file."),
-        OpeningTrap("ot_halosar_1", "Halosar Trap", "Blackmar-Diemer gambit tactical surprise.", listOf("d2d4", "d7d5", "e2e4", "d5e4", "b1c3", "g8f6", "f2f3", "e4f3", "d1f3", "d8d4", "c1e3", "d4b4", "e1c1", "c8g4", "c3b5"), 7, "Nb5 creates an unstoppable mate threat on c7."),
-        OpeningTrap("ot_lasker_1", "Lasker Trap", "Historic underpromotion in the Albin Countergambit.", listOf("d2d4", "d7d5", "c2c4", "e7e5", "d4e5", "d5d4", "e2e3", "f8b4", "c1d2", "d4e3", "d2b4", "e3f2", "e1e2", "f2g1n"), 7, "Promoting to Knight with check wins the Queen."),
-        OpeningTrap("ot_budapest_1", "Budapest Trap", "Smothered checkmate in the Budapest Gambit.", listOf("d2d4", "g8f6", "c2c4", "e7e5", "d4e5", "f6g4", "c1f4", "b8c6", "g1f3", "f8b4", "b1d2", "d8e7", "a2a3", "g4e5", "a3b4", "e5d3"), 7, "Nd3 checkmate because the pawn is pinned!"),
-        OpeningTrap("ot_mortimer_1", "Mortimer Trap", "Deceptive Knight maneuver in the Berlin Defense.", listOf("e2e4", "e7e5", "g1f3", "b8c6", "f1b5", "g8f6", "d2d3", "c6e7", "f3e5", "c7c6", "b5a4", "d8a5"), 6, "Qa5+ forks the King on e1 and Knight on e5."),
-        OpeningTrap("ot_rubinstein_1", "Rubinstein Trap", "A classic Queen's Gambit Declined maneuver.", listOf("d2d4", "d7d5", "c2c4", "e7e6", "b1c3", "g8f6", "c1g5", "b8d7", "e2e3", "c7c6", "g1f3", "d8a5", "f3d2", "f8b4", "d1c2", "e8g8", "g5f4"), 8, "Sharp positional trap in the Cambridge Springs."),
-        OpeningTrap("ot_magnus_smith_1", "Magnus Smith Trap", "A sharp tactic in the Sicilian Sozin punishing an early g6.", listOf("e2e4", "c7c5", "g1f3", "d7d6", "d2d4", "c5d4", "f3d4", "g8f6", "b1c3", "b8c6", "f1c4", "g7g6", "d4c6", "b7c6", "e4e5", "d6e5", "c4f7", "e8f7", "d1d8"), 15, "8... dxe5 allows 9. Bxf7+ winning the Queen on d8."),
-        OpeningTrap("ot_tarrasch_1", "Tarrasch Trap", "Exploiting the pinned d-pawn in the Open Ruy Lopez.", listOf("e2e4", "e7e5", "g1f3", "b8c6", "f1b5", "a7a6", "b5a4", "g8f6", "e1g1", "f6e4", "d2d4", "b7b5", "a4b3", "d7d5", "d4e5", "c8e6", "c2c3", "f8e7", "f1e1", "e8g8", "f3d4", "d8d7", "d4e6", "f7e6", "e1e4"), 23, "13. Rxe4 wins a piece because Black's d-pawn is pinned to the Queen on d7.")
-    )
-
     fun getDailyPuzzle(): Puzzle = levelPuzzles.first()
 
     fun getPuzzleForLevel(level: Int): Puzzle {
@@ -172,12 +151,7 @@ object PuzzleRepository {
     }
 
     fun getAllTacticalCategories(): List<String> {
-        return listOf(
-            "Mate in 1", "Mate in 2", "Fork", "Pin", "Skewer",
-            "Double Attack", "Discovered Attack", "Smothered Mate",
-            "Sacrifice", "Attraction", "Deflection", "Clearance",
-            "Winning Material"
-        )
+        return TacticalDatabase.getAllCategories()
     }
 
     fun getAllEndgameCategories(): List<String> {
@@ -210,112 +184,20 @@ object PuzzleRepository {
     }
 
     fun getAllOpeningTraps(): List<OpeningTrap> {
-        return allTraps
+        return OpeningTrapsDatabase.getAllTraps()
     }
 
     fun getRandomPuzzles(count: Int): List<Puzzle> {
-        val allAvailable = mutableListOf<Puzzle>()
-        allAvailable.addAll(levelPuzzles)
-        for (cat in getAllTacticalCategories()) {
-            allAvailable.addAll(TacticalDatabase.getPuzzles(cat))
-        }
-        val distinct = allAvailable.distinctBy { it.fen }
-        val random = Random(System.currentTimeMillis())
-
-        val easy = distinct.filter { it.rating <= 1100 }.shuffled(random)
-        val moderate = distinct.filter { it.rating in 1101..1700 }.shuffled(random)
-        val hard = distinct.filter { it.rating > 1700 }.shuffled(random)
-
-        val easyCount = (count * 0.35).toInt().coerceAtLeast(1)
-        val moderateCount = (count * 0.35).toInt().coerceAtLeast(1)
-        val hardCount = (count - easyCount - moderateCount).coerceAtLeast(1)
-
-        val selected = mutableListOf<Puzzle>()
-        selected.addAll(easy.take(easyCount))
-        selected.addAll(moderate.take(moderateCount))
-        selected.addAll(hard.take(hardCount))
-
-        if (selected.size < count) {
-            val remaining = distinct.filterNot { p -> selected.any { it.id == p.id } }.shuffled(random)
-            selected.addAll(remaining.take(count - selected.size))
-        }
-
-        return selected.sortedBy { it.rating }
+        return PuzzleRushDatabase.getRandomPuzzles(count)
     }
 
     fun getAllSurvivalCategories(): List<String> {
-        return listOf(
-            "Classic Survival",
-            "Checkmate Survival",
-            "Fork & Pin Survival",
-            "Sacrifice & Attack",
-            "Defensive Survival",
-            "Grandmaster Survival"
-        )
+        return SurvivalDatabase.getAllCategories()
     }
 
     // RETURNS 100 THEME-MATCHED PUZZLES SORTED ASCENDING BY RATING FOR SURVIVAL MODE
     fun getSurvivalPuzzlesByCategory(category: String): List<Puzzle> {
-        val themeCategories = when (category) {
-            "Checkmate Survival" -> listOf("Mate in 1", "Mate in 2", "Smothered Mate")
-            "Fork & Pin Survival" -> listOf("Fork", "Pin", "Skewer", "Double Attack")
-            "Sacrifice & Attack" -> listOf("Sacrifice", "Attraction", "Deflection", "Clearance", "Discovered Attack")
-            "Defensive Survival" -> listOf("Winning Material", "Pin", "Fork")
-            "Grandmaster Survival" -> getAllTacticalCategories()
-            else -> getAllTacticalCategories()
-        }
-
-        val pool = mutableListOf<Puzzle>()
-        for (theme in themeCategories) {
-            pool.addAll(TacticalDatabase.getPuzzles(theme))
-        }
-        val extra = when (category) {
-            "Checkmate Survival" -> levelPuzzles.filter { it.theme.contains("Mate", ignoreCase = true) || it.theme.contains("Smothered", ignoreCase = true) }
-            "Fork & Pin Survival" -> levelPuzzles.filter { it.theme.contains("Fork", ignoreCase = true) || it.theme.contains("Pin", ignoreCase = true) }
-            "Sacrifice & Attack" -> levelPuzzles.filter { it.theme.contains("Sacrifice", ignoreCase = true) || it.theme.contains("Attraction", ignoreCase = true) }
-            "Defensive Survival" -> levelPuzzles.filter { it.theme.contains("Material", ignoreCase = true) || it.theme.contains("Defense", ignoreCase = true) }
-            else -> levelPuzzles
-        }
-        pool.addAll(extra)
-
-        val distinctPool = pool.distinctBy { it.fen }
-        val random = Random(System.currentTimeMillis())
-
-        val easyPool = distinctPool.filter { it.rating <= 1050 }.shuffled(random)
-        val moderatePool = distinctPool.filter { it.rating in 1051..1650 }.shuffled(random)
-        val hardPool = distinctPool.filter { it.rating > 1650 }.shuffled(random)
-
-        val catPrefix = category.lowercase().replace(" & ", "_").replace(" ", "_")
-
-        return (1..100).map { i ->
-            val (tierRating, base) = when {
-                i <= 35 -> {
-                    val r = 650 + (i * 10)
-                    val p = if (easyPool.isNotEmpty()) easyPool[(i - 1) % easyPool.size] else distinctPool[(i - 1) % distinctPool.size]
-                    r to p
-                }
-                i <= 70 -> {
-                    val r = 1100 + ((i - 35) * 15)
-                    val p = if (moderatePool.isNotEmpty()) moderatePool[(i - 36) % moderatePool.size] else distinctPool[(i - 1) % distinctPool.size]
-                    r to p
-                }
-                else -> {
-                    val r = 1700 + ((i - 70) * 20)
-                    val p = if (hardPool.isNotEmpty()) hardPool[(i - 71) % hardPool.size] else distinctPool[(i - 1) % distinctPool.size]
-                    r to p
-                }
-            }
-
-            Puzzle(
-                id = "survival_${catPrefix}_$i",
-                fen = base.fen,
-                solutionMoves = base.solutionMoves,
-                rating = tierRating,
-                theme = "$category - ${base.theme.substringAfter(" - ", base.theme)}",
-                xpReward = 15 + (i / 10),
-                coinsReward = 8 + (i / 20)
-            )
-        }.sortedBy { it.rating }
+        return SurvivalDatabase.getPuzzles(category)
     }
 
     fun getSurvivalPuzzles(): List<Puzzle> {
