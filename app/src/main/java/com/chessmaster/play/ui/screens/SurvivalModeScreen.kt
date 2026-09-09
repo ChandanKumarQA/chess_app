@@ -2,16 +2,22 @@ package com.chessmaster.play.ui.screens
 
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -44,13 +50,13 @@ enum class SurvivalState { LEVEL_SELECTION, PLAYING, GAME_OVER }
 @Composable
 fun SurvivalModeScreen(onBack: () -> Unit) {
     var gameState by remember { mutableStateOf(SurvivalState.LEVEL_SELECTION) }
+    var selectedCategory by remember { mutableStateOf<String?>(null) }
     var currentLevelIndex by remember { mutableIntStateOf(0) }
 
     val darkBg = MaterialTheme.colorScheme.background
     val context = LocalContext.current
     val activity = context as? Activity
     val interstitialAdManager = remember { InterstitialAdManager(context) }
-    val highestUnlocked = com.chessmaster.play.data.LocalLeaderboardManager.getHighestUnlockedSurvivalLevel(context)
     val cardBg = MaterialTheme.colorScheme.surfaceVariant
     val textPrimary = MaterialTheme.colorScheme.onBackground
     val textSecondary = MaterialTheme.colorScheme.onSurfaceVariant
@@ -60,46 +66,141 @@ fun SurvivalModeScreen(onBack: () -> Unit) {
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             when (gameState) {
                 SurvivalState.LEVEL_SELECTION -> {
-                    Column(modifier = Modifier.fillMaxSize()) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            IconButton(onClick = onBack) {
-                                Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = androidx.compose.ui.graphics.Color.White)
+                    if (selectedCategory == null) {
+                        // Category selection view
+                        Column(modifier = Modifier.fillMaxSize()) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                IconButton(onClick = onBack) {
+                                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                                }
+                                Text("Survival Mode", color = textPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 8.dp))
                             }
-                            Text("Survival Mode", color = textPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 8.dp))
+                            
+                            val categories = PuzzleRepository.getAllSurvivalCategories()
+                            LazyColumn(
+                                contentPadding = PaddingValues(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                items(categories) { category ->
+                                    CategoryItem(
+                                        title = category,
+                                        difficulty = "100 Levels • 3 Lives",
+                                        puzzleCount = 100,
+                                        completion = 0,
+                                        bestScore = 0,
+                                        cardBg = cardBg,
+                                        textPrimary = textPrimary,
+                                        textSecondary = textSecondary,
+                                        accentColor = accentColor,
+                                        isLocked = false,
+                                        onClick = { 
+                                            selectedCategory = category
+                                        }
+                                    )
+                                }
+                            }
                         }
-                        
-                        LazyColumn(
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            items(10) { index ->
-                                val levelNum = index + 1
-                                val isLocked = levelNum > highestUnlocked
-                                
-                                CategoryItem(
-                                    title = "Level $levelNum",
-                                    difficulty = "Survival",
-                                    puzzleCount = 1,
-                                    completion = if (isLocked) 0 else 100,
-                                    bestScore = 0,
-                                    cardBg = cardBg,
-                                    textPrimary = textPrimary,
-                                    textSecondary = textSecondary,
-                                    accentColor = accentColor,
-                                    isLocked = isLocked,
-                                    onClick = { 
-                                        currentLevelIndex = index
-                                        gameState = SurvivalState.PLAYING 
+                    } else {
+                        // 100 Levels grid for selected category
+                        val easyLevels = (1..35).toList()
+                        val moderateLevels = (36..70).toList()
+                        val hardLevels = (71..100).toList()
+
+                        Column(modifier = Modifier.fillMaxSize()) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                IconButton(onClick = { selectedCategory = null }) {
+                                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                                }
+                                Column(modifier = Modifier.padding(start = 8.dp)) {
+                                    Text(selectedCategory!!, color = textPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                                    Text("100 LEVELS • SURVIVAL CHALLENGE", color = accentColor, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                }
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(1f)
+                                    .padding(horizontal = 16.dp)
+                            ) {
+                                LazyVerticalGrid(
+                                    columns = GridCells.Fixed(5),
+                                    contentPadding = PaddingValues(bottom = 24.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    // === EASY SECTION ===
+                                    item(span = { GridItemSpan(maxLineSpan) }) {
+                                        PuzzleTierHeader(
+                                            title = "EASY",
+                                            subtitle = "Levels 1 - 35 • Rating 600 - 1050",
+                                            badgeColor = Color(0xFF00C853)
+                                        )
                                     }
-                                )
+                                    items(easyLevels) { level ->
+                                        LevelBox(
+                                            level = level,
+                                            activeColor = Color(0xFF00C853),
+                                            onClick = {
+                                                currentLevelIndex = level - 1
+                                                gameState = SurvivalState.PLAYING
+                                            }
+                                        )
+                                    }
+
+                                    // === MODERATE SECTION ===
+                                    item(span = { GridItemSpan(maxLineSpan) }) {
+                                        Spacer(modifier = Modifier.height(16.dp))
+                                        PuzzleTierHeader(
+                                            title = "MODERATE",
+                                            subtitle = "Levels 36 - 70 • Rating 1100 - 1650",
+                                            badgeColor = Color(0xFFFFB300)
+                                        )
+                                    }
+                                    items(moderateLevels) { level ->
+                                        LevelBox(
+                                            level = level,
+                                            activeColor = Color(0xFFFFB300),
+                                            onClick = {
+                                                currentLevelIndex = level - 1
+                                                gameState = SurvivalState.PLAYING
+                                            }
+                                        )
+                                    }
+
+                                    // === HARD SECTION ===
+                                    item(span = { GridItemSpan(maxLineSpan) }) {
+                                        Spacer(modifier = Modifier.height(16.dp))
+                                        PuzzleTierHeader(
+                                            title = "HARD",
+                                            subtitle = "Levels 71 - 100 • Rating 1700 - 2400",
+                                            badgeColor = Color(0xFFE53935)
+                                        )
+                                    }
+                                    items(hardLevels) { level ->
+                                        LevelBox(
+                                            level = level,
+                                            activeColor = Color(0xFFE53935),
+                                            onClick = {
+                                                currentLevelIndex = level - 1
+                                                gameState = SurvivalState.PLAYING
+                                            }
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
                 }
                 SurvivalState.PLAYING -> SurvivalGame(
+                    category = selectedCategory ?: "Classic Survival",
                     levelIndex = currentLevelIndex,
                     onGameOver = { gameState = SurvivalState.GAME_OVER },
                     onLevelComplete = {
@@ -110,7 +211,7 @@ fun SurvivalModeScreen(onBack: () -> Unit) {
                     onNextLevel = {
                         val nextLevel = currentLevelIndex + 2
                         com.chessmaster.play.data.LocalLeaderboardManager.unlockNextSurvivalLevel(context, nextLevel - 1)
-                        if (currentLevelIndex < 9) {
+                        if (currentLevelIndex < 99) {
                             currentLevelIndex++
                         } else {
                             gameState = SurvivalState.LEVEL_SELECTION
@@ -132,7 +233,32 @@ fun SurvivalModeScreen(onBack: () -> Unit) {
 }
 
 @Composable
+private fun LevelBox(
+    level: Int,
+    activeColor: Color,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .aspectRatio(1f)
+            .clip(RoundedCornerShape(8.dp))
+            .background(Color(0xFF1E293B))
+            .border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(8.dp))
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = level.toString(),
+            color = Color.White.copy(alpha = 0.9f),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
 fun SurvivalGame(
+    category: String = "Classic Survival",
     levelIndex: Int,
     onGameOver: () -> Unit,
     onLevelComplete: () -> Unit,
@@ -154,7 +280,7 @@ fun SurvivalGame(
         adManager.loadAd()
     }
 
-    val puzzles = remember { PuzzleRepository.getSurvivalPuzzles() }
+    val puzzles = remember(category) { PuzzleRepository.getSurvivalPuzzlesByCategory(category) }
     
     var showSolvedPopup by remember { mutableStateOf(false) }
     var currentPuzzleTime by remember { mutableIntStateOf(0) }
@@ -224,7 +350,12 @@ fun SurvivalGame(
                 IconButton(onClick = onBack) {
                     Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = androidx.compose.ui.graphics.Color.White)
                 }
-                Text("Survival Mode", color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    "$category • Level ${levelIndex + 1}",
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
             Row {
                 for (i in 1..3) {

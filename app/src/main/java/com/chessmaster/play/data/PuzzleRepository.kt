@@ -123,16 +123,6 @@ object PuzzleRepository {
         addAll(levelPuzzles)
     }
 
-    private val endgamePool = listOf(
-        Pair("King vs King", Pair("8/8/8/4k3/4K3/8/8/8 w - - 0 1", listOf("e4d3"))),
-        Pair("King + Pawn", Pair("8/8/8/4k3/4P3/4K3/8/8 w - - 0 1", listOf("e3d3"))),
-        Pair("Rook Endgame", Pair("8/8/8/4k3/8/4K3/8/R7 w - - 0 1", listOf("a1a5"))),
-        Pair("Queen Endgame", Pair("8/8/8/4k3/8/4K3/8/Q7 w - - 0 1", listOf("a1e5"))),
-        Pair("Bishop Endgame", Pair("8/8/8/4k3/8/4K3/8/B7 w - - 0 1", listOf("a1e5"))),
-        Pair("Knight Endgame", Pair("8/8/8/4k3/8/4K3/8/N7 w - - 0 1", listOf("a1b3"))),
-        Pair("Lucena", Pair("1K6/1P1k4/8/8/8/8/8/2R5 w - - 0 1", listOf("c1c7"))),
-        Pair("Philidor", Pair("8/8/8/4k3/8/4K3/8/R7 w - - 0 1", listOf("a1a5")))
-    )
 
     private val allTraps = listOf(
         OpeningTrap("ot_scholar_1", "Scholar's Mate", "A quick 4-move checkmate targeting f7.", listOf("e2e4", "e7e5", "d1h5", "b8c6", "f1c4", "g8f6", "h5f7"), 5, "Nf6 is a mistake when Bc4 and Qh5 are attacking f7."),
@@ -208,35 +198,9 @@ object PuzzleRepository {
     }
 
     // RETURNS 100 ENDGAME LESSONS FOR EACH CATEGORY (1-35 Easy, 36-70 Moderate, 71-100 Hard)
+    // USES AUTHENTIC LICHESS-STYLE PRACTICE POSITIONS
     fun getEndgameLessonsByCategory(category: String): List<EndgameLesson> {
-        val poolItem = endgamePool.find { it.first == category } ?: endgamePool.first()
-        return (1..100).map { i ->
-            val tier = when {
-                i <= 35 -> "Easy"
-                i <= 70 -> "Moderate"
-                else -> "Hard"
-            }
-            val title = when (category) {
-                "King vs King" -> "Opposition Technique"
-                "King + Pawn" -> "Pawn Promotion"
-                "Rook Endgame" -> "Rook Cutting / Cut-off"
-                "Queen Endgame" -> "Queen Checkmate Pattern"
-                "Bishop Endgame" -> "Wrong Bishop Defense"
-                "Knight Endgame" -> "Knight Outpost"
-                "Lucena" -> "Building the Bridge"
-                "Philidor" -> "Third Rank Defense"
-                else -> category
-            }
-            EndgameLesson(
-                id = "e_${category.replace("+", "p").replace(" ", "_").lowercase()}_$i",
-                title = "$title - Level $i ($tier)",
-                category = category,
-                fen = poolItem.second.first,
-                explanation = "Master the $category technique for Level $i ($tier difficulty).",
-                hint = "Focus on the key critical squares.",
-                solutionMoves = poolItem.second.second
-            )
-        }
+        return EndgameDatabase.getLessons(category)
     }
 
     fun getFirstLessonOfNextEndgameCategory(currentCategory: String): EndgameLesson? {
@@ -260,7 +224,59 @@ object PuzzleRepository {
         }
     }
 
+    fun getAllSurvivalCategories(): List<String> {
+        return listOf(
+            "Classic Survival",
+            "Checkmate Survival",
+            "Fork & Pin Survival",
+            "Sacrifice & Attack",
+            "Endgame Survival",
+            "Grandmaster Survival"
+        )
+    }
+
+    // RETURNS 100 PUZZLES FOR EACH SURVIVAL CATEGORY (1-35 Easy, 36-70 Moderate, 71-100 Hard)
+    fun getSurvivalPuzzlesByCategory(category: String): List<Puzzle> {
+        val filtered = when (category) {
+            "Checkmate Survival" -> levelPuzzles.filter { 
+                it.theme.contains("Mate", ignoreCase = true) || it.theme.contains("Smothered", ignoreCase = true) 
+            }.ifEmpty { levelPuzzles }
+            "Fork & Pin Survival" -> levelPuzzles.filter { 
+                it.theme.contains("Fork", ignoreCase = true) || it.theme.contains("Pin", ignoreCase = true) || 
+                it.theme.contains("Skewer", ignoreCase = true) || it.theme.contains("Double Attack", ignoreCase = true)
+            }.ifEmpty { levelPuzzles }
+            "Sacrifice & Attack" -> levelPuzzles.filter { 
+                it.theme.contains("Sacrifice", ignoreCase = true) || it.theme.contains("Attraction", ignoreCase = true) || 
+                it.theme.contains("Deflection", ignoreCase = true) || it.theme.contains("Clearance", ignoreCase = true)
+            }.ifEmpty { levelPuzzles }
+            "Endgame Survival" -> levelPuzzles.filter { 
+                it.theme.contains("Winning Material", ignoreCase = true) || it.theme.contains("Ladder", ignoreCase = true)
+            }.ifEmpty { levelPuzzles }
+            "Grandmaster Survival" -> levelPuzzles.sortedByDescending { it.rating }
+            else -> levelPuzzles.sortedBy { it.rating }
+        }
+
+        return (1..100).map { i ->
+            val tierRating = when {
+                i <= 35 -> 650 + (i * 10)
+                i <= 70 -> 1100 + ((i - 35) * 15)
+                else -> 1700 + ((i - 70) * 20)
+            }
+            val base = filtered[(i - 1) % filtered.size]
+            val catPrefix = category.lowercase().replace(" & ", "_").replace(" ", "_")
+            Puzzle(
+                id = "survival_${catPrefix}_$i",
+                fen = base.fen,
+                solutionMoves = base.solutionMoves,
+                rating = tierRating,
+                theme = category,
+                xpReward = 15 + (i / 10),
+                coinsReward = 8 + (i / 20)
+            )
+        }
+    }
+
     fun getSurvivalPuzzles(): List<Puzzle> {
-        return levelPuzzles.sortedBy { it.rating }
+        return getSurvivalPuzzlesByCategory("Classic Survival")
     }
 }
