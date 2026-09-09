@@ -249,7 +249,7 @@ object PuzzleRepository {
             "Checkmate Survival",
             "Fork & Pin Survival",
             "Sacrifice & Attack",
-            "Endgame Survival",
+            "Defensive Survival",
             "Grandmaster Survival"
         )
     }
@@ -260,7 +260,7 @@ object PuzzleRepository {
             "Checkmate Survival" -> listOf("Mate in 1", "Mate in 2", "Smothered Mate")
             "Fork & Pin Survival" -> listOf("Fork", "Pin", "Skewer", "Double Attack")
             "Sacrifice & Attack" -> listOf("Sacrifice", "Attraction", "Deflection", "Clearance", "Discovered Attack")
-            "Endgame Survival" -> listOf("Winning Material")
+            "Defensive Survival" -> listOf("Winning Material", "Pin", "Fork")
             "Grandmaster Survival" -> getAllTacticalCategories()
             else -> getAllTacticalCategories()
         }
@@ -273,7 +273,7 @@ object PuzzleRepository {
             "Checkmate Survival" -> levelPuzzles.filter { it.theme.contains("Mate", ignoreCase = true) || it.theme.contains("Smothered", ignoreCase = true) }
             "Fork & Pin Survival" -> levelPuzzles.filter { it.theme.contains("Fork", ignoreCase = true) || it.theme.contains("Pin", ignoreCase = true) }
             "Sacrifice & Attack" -> levelPuzzles.filter { it.theme.contains("Sacrifice", ignoreCase = true) || it.theme.contains("Attraction", ignoreCase = true) }
-            "Endgame Survival" -> levelPuzzles.filter { it.theme.contains("Material", ignoreCase = true) }
+            "Defensive Survival" -> levelPuzzles.filter { it.theme.contains("Material", ignoreCase = true) || it.theme.contains("Defense", ignoreCase = true) }
             else -> levelPuzzles
         }
         pool.addAll(extra)
