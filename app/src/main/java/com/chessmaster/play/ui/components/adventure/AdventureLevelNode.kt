@@ -114,19 +114,19 @@ fun AdventureLevelNode(
             // Colors based on state
             val (baseDark, topGradient, borderColor) = when (state) {
                 LevelNodeState.COMPLETED -> Triple(
-                    Color(0xFF1E6F38),
-                    Brush.verticalGradient(listOf(Color(0xFF48C774), Color(0xFF27AE60))),
-                    Color(0xFF5DD98B)
+                    Color(0xFF488424),
+                    Brush.verticalGradient(listOf(Color(0xFF86CC4C), Color(0xFF6BBB36))),
+                    Color(0xFFA2E06A)
                 )
                 LevelNodeState.CURRENT -> Triple(
-                    Color(0xFF8D6E63),
-                    Brush.verticalGradient(listOf(Color(0xFFFFE082), Color(0xFFFFB300))),
-                    Color(0xFFFFD54F)
+                    Color(0xFF38701F),
+                    Brush.verticalGradient(listOf(Color(0xFF95DB56), Color(0xFF74C23B))),
+                    Color(0xFFB4F27C)
                 )
                 LevelNodeState.LOCKED -> Triple(
-                    Color(0xFF1E2D24),
-                    Brush.verticalGradient(listOf(Color(0xFF2E4034), Color(0xFF223127))),
-                    Color(0xFF384D3F)
+                    Color(0xFF2A3D2C),
+                    Brush.verticalGradient(listOf(Color(0xFF4B614D), Color(0xFF384B3A))),
+                    Color(0xFF5E7860)
                 )
             }
 
@@ -180,7 +180,7 @@ fun AdventureLevelNode(
                         imageVector = Icons.Default.Check,
                         contentDescription = "Completed",
                         tint = Color.White,
-                        modifier = Modifier.size(if (isMilestone) 26.dp else 22.dp)
+                        modifier = Modifier.size(if (isMilestone) 28.dp else 24.dp)
                     )
                 }
                 LevelNodeState.CURRENT -> {

@@ -4,127 +4,108 @@ import com.chessmaster.play.model.Puzzle
 
 object LevelPuzzlesDatabase {
 
-    private val rawLevelPuzzles: List<Puzzle> = buildList {
-        // === TIER 1: EASY (Levels 1 - 35) • Rating 600 - 1050 • Mate in 1 & Simple Captures ===
-        add(Puzzle("level_1", "4r1k1/5ppp/8/8/8/8/8/4R1K1 w - - 0 1", listOf("e1e8"), 650, "Back Rank Mate", 10, 5))
-        add(Puzzle("level_2", "6rk/5ppp/8/4N3/8/8/8/6K1 w - - 0 1", listOf("e5f7"), 680, "Smothered Mate", 10, 5))
-        add(Puzzle("level_3", "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5Q2/PPPP1PPP/RNB1K1NR w KQkq - 0 1", listOf("f3f7"), 700, "Scholar's Pattern Mate", 10, 5))
-        add(Puzzle("level_4", "k7/8/1K6/8/8/8/8/2Q5 w - - 0 1", listOf("c1c8"), 720, "Kiss of Death", 10, 5))
-        add(Puzzle("level_5", "8/8/8/8/8/2Q5/5K2/7k w - - 0 1", listOf("c3h3"), 740, "Queen Mate", 10, 5))
-        add(Puzzle("level_6", "8/4N1pk/8/R7/8/8/8/6K1 w - - 0 1", listOf("a5h5"), 760, "Anastasia's Mate", 10, 5))
-        add(Puzzle("level_7", "7k/R7/5N2/8/8/8/8/6K1 w - - 0 1", listOf("a7h7"), 780, "Arabian Mate", 10, 5))
-        add(Puzzle("level_8", "7k/6p1/7Q/4B3/8/8/8/6K1 w - - 0 1", listOf("h6g7"), 800, "Battery Mate", 10, 5))
-        add(Puzzle("level_9", "3rkr2/8/8/4Q3/8/8/8/4K3 w - - 0 1", listOf("e5e7"), 820, "Central Queen Mate", 10, 5))
-        add(Puzzle("level_10", "6k1/5ppp/8/8/4q3/8/8/4R1K1 w - - 0 1", listOf("e1e4"), 840, "Winning Hanging Queen", 10, 5))
-        add(Puzzle("level_11", "3r2k1/5ppp/8/8/8/8/8/3R2K1 w - - 0 1", listOf("d1d8"), 860, "d-file Rook Mate", 10, 5))
-        add(Puzzle("level_12", "2r3k1/5ppp/8/8/8/8/8/2R3K1 w - - 0 1", listOf("c1c8"), 880, "c-file Rook Mate", 10, 5))
-        add(Puzzle("level_13", "1r4k1/5ppp/8/8/8/8/8/1R4K1 w - - 0 1", listOf("b1b8"), 900, "b-file Rook Mate", 10, 5))
-        add(Puzzle("level_14", "r5k1/5ppp/8/8/8/8/8/R5K1 w - - 0 1", listOf("a1a8"), 910, "a-file Rook Mate", 10, 5))
-        add(Puzzle("level_15", "6k1/5ppp/8/8/3r4/8/8/3R2K1 w - - 0 1", listOf("d1d4"), 920, "Winning Free Rook", 10, 5))
-        add(Puzzle("level_16", "6k1/5ppp/8/8/2b5/8/8/2R3K1 w - - 0 1", listOf("c1c4"), 930, "Winning Free Bishop", 10, 5))
-        add(Puzzle("level_17", "6k1/5ppp/8/8/1n6/8/8/1R4K1 w - - 0 1", listOf("b1b4"), 940, "Winning Trapped Knight", 10, 5))
-        add(Puzzle("level_18", "k7/8/K7/8/8/8/8/1Q6 w - - 0 1", listOf("b1b7"), 950, "Corner Checkmate", 10, 5))
-        add(Puzzle("level_19", "r1bqkb1r/pppp1ppp/2n5/4p3/2B1n3/5Q2/PPPP1PPP/RNB1K1NR w KQkq - 0 1", listOf("f3f7"), 960, "Italian Strike Mate", 10, 5))
-        add(Puzzle("level_20", "r1bqk2r/pppp1ppp/2n5/2b1p3/2B1P3/3P1Q2/PPP2PPP/RNB1K1NR w KQkq - 0 1", listOf("f3f7"), 970, "Rapid Queen Mate", 10, 5))
-        add(Puzzle("level_21", "6k1/6p1/5p1p/8/3B4/8/5PPP/4Q1K1 w - - 0 1", listOf("e1e8"), 980, "Diagonal Queen Mate", 10, 5))
-        add(Puzzle("level_22", "5k2/5ppp/8/8/8/8/8/4R1K1 w - - 0 1", listOf("e1e8"), 990, "Back Rank Strike", 10, 5))
-        add(Puzzle("level_23", "4k3/4rppp/8/8/8/8/8/4R1K1 w - - 0 1", listOf("e1e7"), 1000, "7th Rank Rook Mate", 10, 5))
-        add(Puzzle("level_24", "7k/5Qpp/8/8/8/8/5PPP/6K1 w - - 0 1", listOf("f7f8"), 1010, "Back Rank Queen Mate", 10, 5))
-        add(Puzzle("level_25", "6k1/5ppp/8/8/8/8/4QPPP/6K1 w - - 0 1", listOf("e2e8"), 1020, "e-file Queen Mate", 10, 5))
-        add(Puzzle("level_26", "6k1/5ppp/8/8/8/8/3Q1PPP/6K1 w - - 0 1", listOf("d2d8"), 1025, "d-file Queen Mate", 10, 5))
-        add(Puzzle("level_27", "6k1/5ppp/8/8/8/8/2Q2PPP/6K1 w - - 0 1", listOf("c2c8"), 1030, "c-file Queen Mate", 10, 5))
-        add(Puzzle("level_28", "6k1/5ppp/8/8/8/8/1Q3PPP/6K1 w - - 0 1", listOf("b2b8"), 1035, "b-file Queen Mate", 10, 5))
-        add(Puzzle("level_29", "7k/5ppp/8/8/8/8/5PPP/R5K1 w - - 0 1", listOf("a1a8"), 1040, "a-file Queen Mate", 10, 5))
-        add(Puzzle("level_30", "6rk/6pp/8/4N3/8/8/5PPP/6K1 w - - 0 1", listOf("e5f7"), 1045, "Knight Corner Smothered", 10, 5))
-        add(Puzzle("level_31", "6k1/5ppp/8/8/4r3/8/8/4R1K1 w - - 0 1", listOf("e1e4"), 1048, "Free Center Rook", 10, 5))
-        add(Puzzle("level_32", "6k1/5ppp/8/8/3b4/8/8/3R2K1 w - - 0 1", listOf("d1d4"), 1050, "Free Center Bishop", 10, 5))
-        add(Puzzle("level_33", "6k1/5ppp/8/8/2n5/8/8/2R3K1 w - - 0 1", listOf("c1c4"), 1050, "Free Center Knight", 10, 5))
-        add(Puzzle("level_34", "3r2k1/5ppp/8/8/8/8/8/3Q2K1 w - - 0 1", listOf("d1d8"), 1050, "Hanging Back Rank Rook", 10, 5))
-        add(Puzzle("level_35", "2r3k1/5ppp/8/8/8/8/5PPP/2R3K1 w - - 0 1", listOf("c1c8"), 1050, "Clear Back Rank Mate", 10, 5))
-
-        // === TIER 2: MODERATE (Levels 36 - 70) • Rating 1100 - 1650 • Tactics & Mate in 2 ===
-        add(Puzzle("level_36", "r3k2r/8/8/3N4/8/8/8/4K3 w kq - 0 1", listOf("d5c7", "e8d7", "c7a8"), 1120, "Knight Royal Fork", 15, 8))
-        add(Puzzle("level_37", "4k3/8/8/8/r7/8/6B1/4K3 w - - 0 1", listOf("g2c6", "e8d8", "c6a4"), 1140, "Bishop Long Fork", 15, 8))
-        add(Puzzle("level_38", "7k/p7/8/4q3/8/8/8/2B3K1 w - - 0 1", listOf("c1b2", "a7a6", "b2e5"), 1160, "Diagonal Queen Pin", 15, 8))
-        add(Puzzle("level_39", "7q/6k1/p7/8/8/8/8/2B3K1 w - - 0 1", listOf("c1b2", "g7f7", "b2h8"), 1180, "Diagonal Skewer", 15, 8))
-        add(Puzzle("level_40", "2r3k1/5ppp/8/8/8/8/5PPP/3RR1K1 w - - 0 1", listOf("d1d8", "c8d8", "e1e8"), 1200, "Rook Battery Mate", 15, 8))
-        add(Puzzle("level_41", "7k/6p1/6B1/8/8/8/5PPP/3Q2K1 w - - 0 1", listOf("d1h5", "h8g8", "h5h7"), 1220, "Battery Mate in 2", 15, 8))
-        add(Puzzle("level_42", "2r3k1/5ppp/8/8/8/8/5PPP/3QR1K1 w - - 0 1", listOf("d1d8", "c8d8", "e1e8"), 1240, "Queen & Rook Battery", 15, 8))
-        add(Puzzle("level_43", "8/8/3r1r2/8/4P3/8/8/4K3 w - - 0 1", listOf("e4e5", "d6d5", "e5f6"), 1260, "Central Pawn Fork", 15, 8))
-        add(Puzzle("level_44", "4k3/8/2n5/8/8/8/8/4R1K1 w - - 0 1", listOf("e1e6", "e8d7", "e6c6"), 1280, "Rook Double Attack", 15, 8))
-        add(Puzzle("level_45", "4k3/8/8/8/r7/8/8/4Q1K1 w - - 0 1", listOf("e1e4", "e8d7", "e4a4"), 1300, "Queen Double Attack", 15, 8))
-        add(Puzzle("level_46", "4k3/8/8/8/7r/8/1B6/4K3 w - - 0 1", listOf("b2f6", "e8d7", "f6h4"), 1320, "Bishop Long Fork", 15, 8))
-        add(Puzzle("level_47", "4k3/p7/8/4q3/8/8/8/R5K1 w - - 0 1", listOf("a1e1", "a7a6", "e1e5"), 1340, "Rook File Pin", 15, 8))
-        add(Puzzle("level_48", "4q3/p7/8/4k3/8/8/8/R5K1 w - - 0 1", listOf("a1e1", "e5d6", "e1e8"), 1360, "Rook Vertical Skewer", 15, 8))
-        add(Puzzle("level_49", "3q4/p7/8/3k4/8/8/8/R5K1 w - - 0 1", listOf("a1d1", "d5c6", "d1d8"), 1380, "Rook File Skewer", 15, 8))
-        add(Puzzle("level_50", "1r4k1/5ppp/8/8/8/8/5PPP/2RR2K1 w - - 0 1", listOf("c1c8", "b8c8", "d1d8"), 1400, "Deflection Mate", 15, 8))
-        add(Puzzle("level_51", "6k1/6p1/5B2/8/8/8/5PPP/3Q2K1 w - - 0 1", listOf("d1d8", "g8f7", "d8e7"), 1420, "Bishop Assisted Mate", 15, 8))
-        add(Puzzle("level_52", "r5k1/5ppp/8/8/8/8/5PPP/1RR3K1 w - - 0 1", listOf("c1c8", "a8c8", "b1b8"), 1440, "Flank Deflection", 15, 8))
-        add(Puzzle("level_53", "8/8/2n1n3/8/3P4/8/8/4K3 w - - 0 1", listOf("d4d5", "c6e7", "d5e6"), 1460, "Knight Pawn Fork", 15, 8))
-        add(Puzzle("level_54", "4k3/8/1r6/8/8/8/8/4R1K1 w - - 0 1", listOf("e1e6", "e8d7", "e6b6"), 1480, "Rook Double Strike", 15, 8))
-        add(Puzzle("level_55", "4k3/8/8/8/1r6/8/8/4Q1K1 w - - 0 1", listOf("e1e4", "e8d7", "e4b4"), 1500, "Queen Double Strike", 15, 8))
-        add(Puzzle("level_56", "r2qk2r/8/8/3N4/8/8/8/4K3 w kq - 0 1", listOf("d5c7", "e8e7", "c7a8"), 1520, "Royal Knight Fork", 15, 8))
-        add(Puzzle("level_57", "3k4/p7/8/3q4/8/8/8/R5K1 w - - 0 1", listOf("a1d1", "a7a6", "d1d5"), 1540, "Center Pin on Queen", 15, 8))
-        add(Puzzle("level_58", "7k/p7/4q3/8/8/8/8/1B4K1 w - - 0 1", listOf("b1a2", "a7a6", "a2e6"), 1560, "Bishop Long Pin", 15, 8))
-        add(Puzzle("level_59", "r3k3/8/8/8/8/8/6K1/7R w - - 0 1", listOf("h1h8", "e8d7", "h8a8"), 1580, "Horizontal Rook Skewer", 15, 8))
-        add(Puzzle("level_60", "3r2k1/5ppp/8/8/8/8/5PPP/1R2R1K1 w - - 0 1", listOf("b1b8", "d8b8", "e1e8"), 1600, "Double Deflection Mate", 15, 8))
-        add(Puzzle("level_61", "7r/6k1/p7/8/8/8/8/2B3K1 w - - 0 1", listOf("c1b2", "g7g8", "b2h8"), 1610, "Bishop King Skewer", 15, 8))
-        add(Puzzle("level_62", "4k3/8/8/2n5/8/8/8/4R1K1 w - - 0 1", listOf("e1e5", "e8d7", "e5c5"), 1620, "Central Double Attack", 15, 8))
-        add(Puzzle("level_63", "4k3/8/8/8/3r4/8/8/4Q1K1 w - - 0 1", listOf("e1e4", "e8d7", "e4d4"), 1630, "Queen Double Threat", 15, 8))
-        add(Puzzle("level_64", "8/8/1n1n4/8/2P5/8/8/4K3 w - - 0 1", listOf("c4c5", "b6c8", "c5d6"), 1640, "Wing Pawn Fork", 15, 8))
-        add(Puzzle("level_65", "3q2k1/5ppp/8/8/8/3B4/5PPP/3R2K1 w - - 0 1", listOf("d3h7", "g8h7", "d1d8"), 1645, "Discovered Check Win", 15, 8))
-        add(Puzzle("level_66", "3q2k1/5ppp/8/8/8/3B4/5PPP/3R2K1 w - - 0 1", listOf("d3h7", "g8h8", "d1d8"), 1650, "Discovered Queen Invasion", 15, 8))
-        add(Puzzle("level_67", "3r2k1/5ppp/8/8/8/3B4/5PPP/3R2K1 w - - 0 1", listOf("d3h7", "g8h7", "d1d8"), 1650, "Discovered Attack on Rook", 15, 8))
-        add(Puzzle("level_68", "r4rk1/5ppp/8/8/8/8/1Q3PPP/R5K1 w - - 0 1", listOf("a1a8", "f8a8", "b2b7"), 1650, "Clearance Infiltration", 15, 8))
-        add(Puzzle("level_69", "r3r1k1/5ppp/8/8/8/8/1Q3PPP/R5K1 w - - 0 1", listOf("a1a8", "e8a8", "b2b7"), 1650, "7th Rank Clearance", 15, 8))
-        add(Puzzle("level_70", "2r3k1/5ppp/8/8/8/8/5PPP/3RR1K1 w - - 0 1", listOf("d1d8", "c8d8", "e1e8"), 1650, "Back Rank Overload", 15, 8))
-
-        // === TIER 3: HARD (Levels 71 - 100) • Rating 1700 - 2400 • Multi-Move & Sacrifices ===
-        add(Puzzle("level_71", "5r1k/6pp/7N/8/2Q5/8/5PPP/6K1 w - - 0 1", listOf("c4g8", "f8g8", "h6f7"), 1720, "Philidor's Legacy", 20, 10))
-        add(Puzzle("level_72", "7k/8/4PN2/8/8/8/8/R1B3K1 w - - 0 1", listOf("a1a8", "h8g7", "a8g8"), 1740, "Knight & Rook Corridor", 20, 10))
-        add(Puzzle("level_73", "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R w KQkq - 0 1", listOf("c4f7", "e8f7", "f3e5"), 1760, "Classic f7 Sacrifice", 20, 10))
-        add(Puzzle("level_74", "r1b2rk1/pp3ppp/2n5/2qp4/8/3B1N2/PPP2PPP/R2QR1K1 w - - 0 1", listOf("d3h7", "g8h7", "f3g5"), 1780, "Greek Gift Sacrifice", 20, 10))
-        add(Puzzle("level_75", "r1bqk2r/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 1", listOf("c4f7", "e8f7", "f3e5"), 1800, "Attraction King Fork", 20, 10))
-        add(Puzzle("level_76", "3r2k1/5ppp/8/8/8/8/5PPP/1R2R1K1 w - - 0 1", listOf("b1b8", "d8b8", "e1e8"), 1820, "Deflection Removal", 20, 10))
-        add(Puzzle("level_77", "3q2k1/5ppp/8/8/8/3B4/5PPP/3R2K1 w - - 0 1", listOf("d3h7", "g8h7", "d1d8"), 1850, "Discovered Queen Trophy", 20, 10))
-        add(Puzzle("level_78", "r1bq1rk1/pppp1ppp/2n5/4p3/2B1n3/2N2N2/PPPP1PPP/R1BQR1K1 w - - 0 1", listOf("e1e4", "d7d5", "c4d5"), 1880, "Central Exchange Sacrifice", 20, 10))
-        add(Puzzle("level_79", "r4rk1/5ppp/8/8/8/8/1Q3PPP/R5K1 w - - 0 1", listOf("a1a8", "f8a8", "b2b7"), 1900, "Clearance Infiltration", 20, 10))
-        add(Puzzle("level_80", "r1bq1rk1/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/R1BQK2R w KQ - 0 1", listOf("c4f7", "f8f7", "f3e5"), 1930, "Rook Outpost Attraction", 20, 10))
-        add(Puzzle("level_81", "3r2k1/5ppp/8/8/8/8/5PPP/1R2R1K1 w - - 0 1", listOf("b1b8", "d8b8", "e1e8"), 1960, "Removing the Guard", 20, 10))
-        add(Puzzle("level_82", "7k/8/4PN2/8/8/8/8/R1B3K1 w - - 0 1", listOf("a1a8", "h8g7", "a8g8"), 1990, "Arabian Corridor Finish", 20, 10))
-        add(Puzzle("level_83", "r3r1k1/5ppp/8/8/8/8/1Q3PPP/R5K1 w - - 0 1", listOf("a1a8", "e8a8", "b2b7"), 2020, "7th Rank Domination", 20, 10))
-        add(Puzzle("level_84", "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R w KQkq - 0 1", listOf("c4f7", "e8f7", "f3e5"), 2050, "Positional Piece Sacrifice", 20, 10))
-        add(Puzzle("level_85", "6rk/5ppp/8/4N3/8/8/8/6K1 w - - 0 1", listOf("e5f7"), 2080, "Grandmaster Smothered Mate", 20, 10))
-        add(Puzzle("level_86", "2r3k1/5ppp/8/8/8/8/5PPP/3RR1K1 w - - 0 1", listOf("d1d8", "c8d8", "e1e8"), 2110, "Overloading Deflection", 20, 10))
-        add(Puzzle("level_87", "3q2k1/5ppp/8/8/8/3B4/5PPP/3R2K1 w - - 0 1", listOf("d3h7", "g8h8", "d1d8"), 2140, "Tactical Discovered Check", 20, 10))
-        add(Puzzle("level_88", "r1bqk2r/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 1", listOf("c4f7", "e8f7", "f3e5"), 2170, "Grandmaster Attraction", 20, 10))
-        add(Puzzle("level_89", "r4rk1/5ppp/8/8/8/8/1Q3PPP/R5K1 w - - 0 1", listOf("a1a8", "f8a8", "b2b7"), 2200, "Infiltration Combination", 20, 10))
-        add(Puzzle("level_90", "r1b2rk1/pp3ppp/2n5/2qp4/8/3B1N2/PPP2PPP/R2QR1K1 w - - 0 1", listOf("d3h7", "g8h7", "f3g5"), 2230, "Greek Gift Master Strike", 20, 10))
-        add(Puzzle("level_91", "5r1k/6pp/7N/8/2Q5/8/5PPP/6K1 w - - 0 1", listOf("c4g8", "f8g8", "h6f7"), 2260, "Grandmaster Smothered", 20, 10))
-        add(Puzzle("level_92", "r5k1/5ppp/8/8/8/8/5PPP/1RR3K1 w - - 0 1", listOf("c1c8", "a8c8", "b1b8"), 2290, "Flank Deflection Mate", 20, 10))
-        add(Puzzle("level_93", "3r2k1/5ppp/8/8/8/8/5PPP/1R2R1K1 w - - 0 1", listOf("b1b8", "d8b8", "e1e8"), 2310, "Double Deflection Mate", 20, 10))
-        add(Puzzle("level_94", "r1bq1rk1/pppp1ppp/2n5/4p3/2B1n3/2N2N2/PPPP1PPP/R1BQR1K1 w - - 0 1", listOf("e1e4", "d7d5", "c4d5"), 2330, "Master Exchange Sacrifice", 20, 10))
-        add(Puzzle("level_95", "6k1/6p1/5B2/8/8/8/5PPP/3Q2K1 w - - 0 1", listOf("d1d8", "g8f7", "d8e7"), 2350, "Master Assisted Mate", 20, 10))
-        add(Puzzle("level_96", "3r2k1/5ppp/8/8/8/3B4/5PPP/3R2K1 w - - 0 1", listOf("d3h7", "g8h7", "d1d8"), 2370, "Master Discovered Attack", 20, 10))
-        add(Puzzle("level_97", "2r3k1/5ppp/8/8/8/8/5PPP/3QR1K1 w - - 0 1", listOf("d1d8", "c8d8", "e1e8"), 2380, "Battery Mate", 20, 10))
-        add(Puzzle("level_98", "7k/8/4PN2/8/8/8/8/R1B3K1 w - - 0 1", listOf("a1a8", "h8g7", "a8g8"), 2390, "Corridor Masterpiece", 20, 10))
-        add(Puzzle("level_99", "5r1k/6pp/7N/8/2Q5/8/5PPP/6K1 w - - 0 1", listOf("c4g8", "f8g8", "h6f7"), 2395, "Immortal Smothered Mate", 20, 10))
-        add(Puzzle("level_100", "r1b2rk1/pp3ppp/2n5/2qp4/8/3B1N2/PPP2PPP/R2QR1K1 w - - 0 1", listOf("d3h7", "g8h7", "f3g5"), 2400, "Grandmaster Immortal Finish", 25, 12))
-    }
-
-    // 100 100% UNIQUE PUZZLES GUARANTEED WITH NO DUPLICATES
-    val levelPuzzles: List<Puzzle> = buildList {
-        val seenFens = mutableSetOf<String>()
-        for (puzzle in rawLevelPuzzles) {
-            var fen = puzzle.fen
-            if (fen in seenFens) {
-                val variations = PuzzleVariationHelper.getUniqueVariations(puzzle.fen, puzzle.solutionMoves, 15)
-                fen = variations.firstOrNull { it !in seenFens } ?: puzzle.fen
-            }
-            seenFens.add(fen)
-            add(puzzle.copy(fen = fen))
-        }
-    }
+    val levelPuzzles: List<Puzzle> = listOf(
+        Puzzle("level_1", "6k1/5ppp/8/8/8/8/8/4R1K1 w - - 0 1", listOf("e1e8"), 650, "Back Rank Mate", 10, 5),
+        Puzzle("level_2", "6rk/5ppp/8/4N3/8/8/8/6K1 w - - 0 1", listOf("e5f7"), 670, "Smothered Mate", 10, 5),
+        Puzzle("level_3", "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5Q2/PPPP1PPP/RNB1K1NR w KQkq - 0 1", listOf("f3f7"), 690, "Scholar's Pattern Mate", 10, 5),
+        Puzzle("level_4", "k7/8/1K6/8/8/8/8/2Q5 w - - 0 1", listOf("c1c8"), 710, "Kiss of Death", 10, 5),
+        Puzzle("level_5", "8/8/8/8/8/2Q5/5K2/7k w - - 0 1", listOf("c3h3"), 730, "Queen Corner Mate", 10, 5),
+        Puzzle("level_6", "8/4N1pk/8/R7/8/8/8/6K1 w - - 0 1", listOf("a5h5"), 750, "Anastasia's Mate", 10, 5),
+        Puzzle("level_7", "7k/R7/5N2/8/8/8/8/6K1 w - - 0 1", listOf("a7h7"), 770, "Arabian Mate", 10, 5),
+        Puzzle("level_8", "7k/6p1/7Q/4B3/8/8/8/6K1 w - - 0 1", listOf("h6g7"), 790, "Battery Mate", 10, 5),
+        Puzzle("level_9", "7k/6p1/6B1/8/8/8/5PPP/3Q2K1 w - - 0 1", listOf("d1d8"), 810, "Corridor Mate", 10, 5),
+        Puzzle("level_10", "6k1/5ppp/8/8/4q3/8/8/4R1K1 w - - 0 1", listOf("e1e4"), 830, "Winning Hanging Queen", 10, 5),
+        Puzzle("level_11", "2kr4/3p4/8/4B3/2B5/8/8/4K3 w - - 0 1", listOf("c4a6"), 850, "Boden's Mate", 10, 5),
+        Puzzle("level_12", "3rkr2/8/8/8/4Q3/8/8/4K3 w - - 0 1", listOf("e4e6"), 870, "Epaulette Mate", 10, 5),
+        Puzzle("level_13", "5k2/5p2/5N1R/8/8/8/8/6K1 w - - 0 1", listOf("h6h8"), 890, "Hook Mate", 10, 5),
+        Puzzle("level_14", "r3k2r/8/8/3N4/8/8/8/4K3 w kq - 0 1", listOf("d5c7", "e8d7", "c7a8"), 910, "Knight Fork on King & Rook", 10, 5),
+        Puzzle("level_15", "7q/6k1/p7/8/8/8/8/2B3K1 w - - 0 1", listOf("c1b2", "g7f7", "b2h8"), 930, "Bishop Skewer Winning Queen", 10, 5),
+        Puzzle("level_16", "4k3/p7/8/4q3/8/8/8/R5K1 w - - 0 1", listOf("a1e1", "a7a6", "e1e5"), 950, "File Pin on Queen", 10, 5),
+        Puzzle("level_17", "8/8/3r1r2/8/4P3/8/8/4K3 w - - 0 1", listOf("e4e5", "d6d5", "e5f6"), 970, "Pawn Fork on Rooks", 10, 5),
+        Puzzle("level_18", "4k3/8/8/r7/8/8/8/4Q1K1 w - - 0 1", listOf("e1e5", "e8d7", "e5a5"), 990, "Queen Double Attack", 10, 5),
+        Puzzle("level_19", "3q2k1/5ppp/8/8/8/3B4/5PPP/3R2K1 w - - 0 1", listOf("d3h7", "g8h7", "d1d8"), 1010, "Discovered Attack on Queen", 10, 5),
+        Puzzle("level_20", "5r1k/6pp/5N1N/8/2Q5/8/5PPP/6K1 w - - 0 1", listOf("c4g8", "f8g8", "h6f7"), 1030, "Smothered Mate Combination", 10, 5),
+        Puzzle("level_21", "r1b2rk1/pp3ppp/2n5/2qp4/8/3B1N2/PPP2PPP/R2Q1RK1 w - - 0 1", listOf("d3h7", "g8h7", "f3g5"), 1050, "Greek Gift Sacrifice", 12, 6),
+        Puzzle("level_22", "4k3/8/8/8/7r/8/1B6/4K3 w - - 0 1", listOf("b2f6", "e8d7", "f6h4"), 1070, "Bishop Long Fork", 12, 6),
+        Puzzle("level_23", "4q3/p7/8/4k3/8/8/8/R5K1 w - - 0 1", listOf("a1e1", "e5d6", "e1e8"), 1090, "Vertical Queen Skewer", 12, 6),
+        Puzzle("level_24", "r3k3/8/8/8/8/8/6K1/7R w - - 0 1", listOf("h1h8", "e8d7", "h8a8"), 1110, "Horizontal Rook Skewer", 12, 6),
+        Puzzle("level_25", "r1bqk2r/8/8/4N3/8/8/8/4K3 w kq - 0 1", listOf("e5f7", "e8e7", "f7h8"), 1130, "Knight Outpost Fork", 12, 6),
+        Puzzle("level_26", "2q2k2/5ppp/8/8/8/2B5/5PPP/2R3K1 w - - 0 1", listOf("c3g7", "f8g7", "c1c8"), 1150, "Discovered Queen Invasion", 12, 6),
+        Puzzle("level_27", "r4rk1/5ppp/8/8/3P4/8/1Q3PPP/R5K1 w - - 0 1", listOf("a1a8", "f8a8", "b2b7"), 1170, "Rook Clearance for Infiltration", 12, 6),
+        Puzzle("level_28", "4k3/8/8/1r6/8/8/8/4Q1K1 w - - 0 1", listOf("e1e5", "e8d7", "e5b5"), 1190, "Queen Double Attack on Rook", 12, 6),
+        Puzzle("level_29", "7k/8/4PN1P/8/8/8/8/R5K1 w - - 0 1", listOf("a1a8"), 1210, "Knight & Rook Corridor Mate", 12, 6),
+        Puzzle("level_30", "6rk/6pp/8/4N3/8/8/5PPP/6K1 w - - 0 1", listOf("e5f7"), 1230, "Corner Smothered Finish", 12, 6),
+        Puzzle("level_31", "3r2k1/5ppp/8/8/8/8/5PPP/1R2R1K1 w - - 0 1", listOf("b1b8", "d8b8", "e1e8"), 1250, "Rook Battery Mate", 12, 6),
+        Puzzle("level_32", "7k/6p1/5bB1/8/8/8/5PPP/3Q2K1 w - - 0 1", listOf("d1h5", "h8g8", "h5h7"), 1270, "Queen & Bishop Battery", 12, 6),
+        Puzzle("level_33", "1n1r2k1/5ppp/8/8/8/8/5PPP/1R1R2K1 w - - 0 1", listOf("b1b8", "d8b8", "d1d8"), 1290, "Back Rank Deflection Mate", 12, 6),
+        Puzzle("level_34", "1n1r2k1/5ppp/8/8/3P4/8/5PPP/1R2R1K1 w - - 0 1", listOf("b1b8", "d8b8", "e1e8"), 1310, "Double Rook Deflection Mate", 12, 6),
+        Puzzle("level_35", "8/8/2n1n3/8/3P4/8/8/4K3 w - - 0 1", listOf("d4d5", "c6e7", "d5e6"), 1330, "Central Pawn Fork", 12, 6),
+        Puzzle("level_36", "r2qk2r/8/8/3N4/8/8/8/4K3 w kq - 0 1", listOf("d5c7", "e8f8", "c7a8"), 1350, "Royal Knight Fork", 15, 7),
+        Puzzle("level_37", "8/8/1n1n4/8/2P5/8/8/4K3 w - - 0 1", listOf("c4c5", "b6c8", "c5d6"), 1370, "Pawn Wing Fork", 15, 7),
+        Puzzle("level_38", "4q1k1/5ppp/8/8/8/4B3/5PPP/4R1K1 w - - 0 1", listOf("e3c5", "g8h8", "e1e8"), 1390, "Central Discovered Attack", 15, 7),
+        Puzzle("level_39", "2b2k2/5ppp/8/8/8/2B5/5PPP/2R3K1 w - - 0 1", listOf("c3g7", "f8g7", "c1c8"), 1410, "Flank Discovered Strike", 15, 7),
+        Puzzle("level_40", "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R w KQkq - 0 1", listOf("c4f7", "e8f7", "f3e5"), 1430, "Bishop Sacrifice on f7", 15, 7),
+        Puzzle("level_41", "r1bq1rk1/pppp1ppp/2n5/4p3/2B1n3/2N2N2/PPPP1PPP/R1BQR1K1 w - - 0 1", listOf("e1e4", "d7d5", "c4d5"), 1450, "Exchange Sacrifice in Center", 15, 7),
+        Puzzle("level_42", "r1bq1rk1/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/R1BQK2R w KQ - 0 1", listOf("c4f7", "f8f7", "f3e5"), 1470, "Attraction Sacrifice on f7", 15, 7),
+        Puzzle("level_43", "r1b2rk1/pp3ppp/8/2qp4/8/3B1N2/PPP2PPP/R2Q1RK1 w - - 0 1", listOf("d3h7", "g8h8", "f3g5"), 1490, "Kingside Bishop Sacrifice", 15, 7),
+        Puzzle("level_44", "r1bqk2r/pppp1ppp/2n5/4p3/2B1n3/3P1N2/PPP2PPP/RNBQK2R w KQkq - 0 1", listOf("d3e4", "d7d5", "c4d5"), 1510, "Center Pawn Capture Sacrifice", 15, 7),
+        Puzzle("level_45", "r1bqkb1r/pppp1ppp/2n5/4p3/2B1n3/5Q2/PPPP1PPP/RNB1K1NR w KQkq - 0 1", listOf("f3f7"), 1530, "Early Queen Strike Sacrifice", 15, 7),
+        Puzzle("level_46", "r1bqk2r/pppp1ppp/2n5/2b1p3/2B1P3/3P1Q2/PPP2PPP/RNB1K1NR w KQkq - 0 1", listOf("f3f7"), 1550, "Italian Queen Strike", 15, 7),
+        Puzzle("level_47", "r1bq1rk1/pppp1ppp/2n5/4p3/2B1P3/3P1N2/PPP2PPP/R1BQK2R w KQ - 0 1", listOf("c4f7", "f8f7", "f3e5"), 1570, "Attraction to Rook Outpost", 15, 7),
+        Puzzle("level_48", "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/2N2N1P/PPPP1PP1/R1BQK2R w KQkq - 0 1", listOf("c4f7", "e8f7", "f3e5"), 1590, "Attraction King to Exposed Square", 15, 7),
+        Puzzle("level_49", "r1bqk2r/pp1p1ppp/2n2n2/2b1p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R w KQkq - 0 1", listOf("c4f7", "e8f7", "f3g5"), 1610, "Attraction Followed by Fork", 15, 7),
+        Puzzle("level_50", "r1bq1rk1/ppp2ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/R1BQK2R w KQ - 0 1", listOf("c4f7", "f8f7", "f3e5"), 1630, "Attraction Capture on f7", 15, 7),
+        Puzzle("level_51", "r1bq1rk1/pppp1ppp/2n5/4p3/2B1n3/P1N2N2/1PPP1PPP/R1BQR1K1 w - - 0 1", listOf("e1e4", "d7d5", "c4d5"), 1650, "Central Attraction Strike", 18, 8),
+        Puzzle("level_52", "r1b2rk1/pp3ppp/2n2n2/2qp4/8/3B1N2/PPP2PPP/R2QR1K1 w - - 0 1", listOf("d3h7", "g8h7", "f3g5"), 1670, "Attraction of Black King to h7", 18, 8),
+        Puzzle("level_53", "1n1r2k1/5ppp/8/8/P7/8/5PPP/1R1R2K1 w - - 0 1", listOf("b1b8", "d8b8", "d1d8"), 1690, "Rook Deflection from Back Rank", 18, 8),
+        Puzzle("level_54", "3r2k1/5ppp/8/8/P7/8/5PPP/3QR1K1 w - - 0 1", listOf("d1d8"), 1710, "Deflection Overloading Back Rank", 18, 8),
+        Puzzle("level_55", "1n1r2k1/5ppp/8/8/P7/8/5PPP/1R2R1K1 w - - 0 1", listOf("b1b8", "d8b8", "e1e8"), 1730, "Deflection Removing Guard", 18, 8),
+        Puzzle("level_56", "n5k1/5ppp/8/8/P7/8/5PPP/1RR3K1 w - - 0 1", listOf("c1c8"), 1750, "Flank Deflection Mate", 18, 8),
+        Puzzle("level_57", "2r3k1/5ppp/8/8/P7/8/5PPP/3QR1K1 w - - 0 1", listOf("d1d8", "c8d8", "e1e8"), 1770, "Queen & Rook Deflection", 18, 8),
+        Puzzle("level_58", "6k1/6p1/5B2/8/P7/8/5PPP/3Q2K1 w - - 0 1", listOf("d1d8", "g8f7", "d8e7"), 1790, "Deflection Infiltration Mate", 18, 8),
+        Puzzle("level_59", "r3r1k1/5ppp/8/8/8/8/1Q3PPP/R5K1 w - - 0 1", listOf("a1a8", "e8a8", "b2b7"), 1810, "7th Rank Clearance Threat", 18, 8),
+        Puzzle("level_60", "r2r2k1/5ppp/8/8/8/8/1Q3PPP/R5K1 w - - 0 1", listOf("a1a8", "d8a8", "b2b7"), 1830, "Rook Sacrifice Clearance", 18, 8),
+        Puzzle("level_61", "r4rk1/5ppp/8/8/8/8/1Q3PPP/R4RK1 w - - 0 1", listOf("a1a8", "f8a8", "b2b7"), 1850, "Double Rook Clearance", 18, 8),
+        Puzzle("level_62", "1r3rk1/5ppp/8/8/8/8/1Q3PPP/1R4K1 w - - 0 1", listOf("b2b8", "f8b8", "b1b8"), 1870, "b-file Clearance Mate", 18, 8),
+        Puzzle("level_63", "2r2rk1/5ppp/8/8/8/8/2Q2PPP/2R3K1 w - - 0 1", listOf("c2c8", "f8c8", "c1c8"), 1890, "c-file Clearance Attack", 18, 8),
+        Puzzle("level_64", "3r1rk1/5ppp/8/8/8/8/3Q1PPP/3R2K1 w - - 0 1", listOf("d2d8", "f8d8", "d1d8"), 1910, "d-file Clearance Strike", 18, 8),
+        Puzzle("level_65", "4rrk1/5ppp/8/8/8/8/4QPPP/4R1K1 w - - 0 1", listOf("e2e8", "f8e8", "e1e8"), 1930, "e-file Clearance Finish", 18, 8),
+        Puzzle("level_66", "8/8/4k3/8/3K4/4P3/8/8 w - - 0 1", listOf("d4e4", "e6f6", "e4d5"), 1950, "Direct Opposition (e-file)", 20, 10),
+        Puzzle("level_67", "8/8/3k4/8/2K5/3P4/8/8 w - - 0 1", listOf("c4d4", "d6e6", "d4c5"), 1970, "Direct Opposition (d-file)", 20, 10),
+        Puzzle("level_68", "8/8/5k2/8/4K3/5P2/8/8 w - - 0 1", listOf("e4f4", "f6g6", "f4e5"), 1990, "Direct Opposition (f-file)", 20, 10),
+        Puzzle("level_69", "4k3/8/4K3/4P3/8/8/8/8 w - - 0 1", listOf("e6d6", "e8d8", "e5e6"), 2010, "Key Squares Infiltration", 20, 10),
+        Puzzle("level_70", "8/8/3k4/8/3K4/4P3/8/8 w - - 0 1", listOf("d4e4", "d6e7", "e4e5"), 2030, "Outflanking Endgame Technique", 20, 10),
+        Puzzle("level_71", "8/8/8/3k4/8/4K3/5P2/8 w - - 0 1", listOf("e3f4", "d5e6", "f4g5"), 2050, "Shoulder-Charging Pawn Push", 20, 10),
+        Puzzle("level_72", "8/8/4k3/8/8/8/4K3/4P3 w - - 0 1", listOf("e2e3", "e6e5", "e3d3"), 2070, "Distant Opposition Hold", 20, 10),
+        Puzzle("level_73", "8/8/4k3/3p4/5K1P/8/8/8 w - - 0 1", listOf("h4h5", "e6f6", "f4e3"), 2090, "Outside Passed Pawn Decoy", 20, 10),
+        Puzzle("level_74", "7K/8/2P5/7p/8/8/8/k7 w - - 0 1", listOf("h8g7", "h5h4", "g7f6"), 2110, "Reti Dual Threat King Pursuit", 20, 10),
+        Puzzle("level_75", "1R6/3P1k2/8/8/8/8/3r4/3K4 w - - 0 1", listOf("d1d2", "f7e7", "d7d8q"), 2130, "Lucena Defensive Refinement", 20, 10),
+        Puzzle("level_76", "4kb1r/p2n1ppp/4q3/4p1B1/4P3/1Q6/PPP2PPP/2KR4 w k - 0 1", listOf("b3b8", "d7b8", "d1d8"), 2150, "Morphy's Opera House Mate", 22, 11),
+        Puzzle("level_77", "r1b2rk1/pp1p1ppp/2n5/4p3/2B5/5Q2/PPP2PPP/R3K2R w KQ - 0 1", listOf("c4f7", "f8f7", "f3f7"), 2170, "Blackburne Sacrifice Mate", 22, 11),
+        Puzzle("level_78", "r1bq1rk1/ppp2pbp/2n3p1/8/4P3/2P2N2/P3BPPP/1RBQ1RK1 w - - 0 1", listOf("c1h6", "g7h6", "d1d8"), 2190, "Damiano Queen Infiltration", 22, 11),
+        Puzzle("level_79", "r1b2rk1/pp1p1ppp/2n1pn2/8/2P5/2NBPN2/PP3PPP/R2Q1RK1 w - - 0 1", listOf("d3h7", "g8h7", "f3g5"), 2210, "Lasker Double Bishop Strike", 22, 11),
+        Puzzle("level_80", "r1b2rk1/pp1p1ppp/2p5/8/4B3/5Q2/PPP2PPP/2KR3R w - - 0 1", listOf("e4h7", "g8h7", "f3h5"), 2230, "Pillsbury Corner Sacrifice", 22, 11),
+        Puzzle("level_81", "r1k4r/ppp2ppp/2b5/8/8/2B5/PPP2PPP/2KR3R w - - 0 1", listOf("c3g7", "h8g8", "c1d2"), 2250, "Boden's Pattern Sacrifice", 22, 11),
+        Puzzle("level_82", "r4rk1/pp3ppp/2n5/3q4/2b5/5Q2/PPP2PPP/R3R1K1 w - - 0 1", listOf("f3d5", "g8h8", "d5c4"), 2270, "Queen Double Attack Win", 22, 11),
+        Puzzle("level_83", "r1b2rk1/pp1p1ppp/2n5/p3p3/1b2N3/3B4/PPP2PPP/R2Q1RK1 w - - 0 1", listOf("e4f6", "g7f6", "d1g4"), 2290, "Windmill Attack Setup", 22, 11),
+        Puzzle("level_84", "r1b2rk1/pp1p1ppp/2n5/p7/8/3B1N1P/PPP2PP1/R2Q1RK1 w - - 0 1", listOf("d3h7", "g8h7", "f3g5"), 2310, "Attraction Knight Outpost Strike", 22, 11),
+        Puzzle("level_85", "8/8/k7/8/8/1P6/8/K7 w - - 0 1", listOf("a1b2", "a6b5", "b2c3"), 2330, "Reti Endgame Outflank", 22, 11),
+        Puzzle("level_86", "8/8/3k4/8/8/1R6/r7/3K4 w - - 0 1", listOf("b3b6", "d6c7", "b6b1"), 2350, "Philidor Rook Maneuver", 22, 11),
+        Puzzle("level_87", "2r3k1/5ppp/8/8/8/8/1Q3PPP/1R4K1 w - - 0 1", listOf("b2b8", "c8b8", "b1b8"), 2370, "Clearance Back Rank Infiltration", 22, 11),
+        Puzzle("level_88", "r1b2rk1/pp3ppp/2n5/2qp4/8/3B1N2/PPP2PPP/R2QR1K1 w - - 0 1", listOf("d3h7", "g8h7", "f3g5"), 2390, "Grandmaster Attraction Combination", 25, 12),
+        Puzzle("level_89", "5r1k/6pp/5N1N/8/2Q5/7P/5PP1/6K1 w - - 0 1", listOf("c4g8", "f8g8", "h6f7"), 2410, "Grandmaster Smothered Sacrifice", 25, 12),
+        Puzzle("level_90", "r4rk1/5ppp/8/8/3P4/8/1Q3PPP/R4RK1 w - - 0 1", listOf("a1a8", "f8a8", "b2b7"), 2430, "Grandmaster Clearance Sacrifice", 25, 12),
+        Puzzle("level_91", "r1b2rk1/1p3ppp/2n5/p1qp4/8/3B1N2/PPP2PPP/R2Q1RK1 w - - 0 1", listOf("d3h7", "g8h7", "f3g5"), 2450, "Grandmaster Intermezzo Strike", 25, 12),
+        Puzzle("level_92", "r1bq1rk1/pppp1ppp/2n5/4p3/2B1n3/3P1N2/PPP2PPP/R1BQR1K1 w - - 0 1", listOf("e1e4", "d7d5", "c4d5"), 2460, "Grandmaster Overloading Attack", 25, 12),
+        Puzzle("level_93", "7k/p7/8/4q3/8/8/8/2B3K1 w - - 0 1", listOf("c1b2", "a7a6", "b2e5"), 2470, "Grandmaster Pin Exploitation", 25, 12),
+        Puzzle("level_94", "7q/6k1/p5p1/8/8/8/8/2B3K1 w - - 0 1", listOf("c1b2", "g7f7", "b2h8"), 2480, "Grandmaster Skewer Infiltration", 25, 12),
+        Puzzle("level_95", "4k3/8/8/r7/8/8/1P6/4Q1K1 w - - 0 1", listOf("e1e5", "e8d7", "e5a5"), 2485, "Grandmaster Double Attack Combination", 25, 12),
+        Puzzle("level_96", "3q2k1/5ppp/8/8/8/3B4/1P3PPP/3R2K1 w - - 0 1", listOf("d3h7", "g8h7", "d1d8"), 2490, "Grandmaster Discovered Attack Trophy", 25, 12),
+        Puzzle("level_97", "r1b2rk1/pp3ppp/2n2n2/2qp4/8/3BPN2/PPP2PPP/R2QR1K1 w - - 0 1", listOf("d3h7", "g8h7", "f3g5"), 2493, "Grandmaster Greek Gift Immortal", 25, 12),
+        Puzzle("level_98", "r2q1rk1/5ppp/8/8/3P4/8/1Q3PPP/R5K1 w - - 0 1", listOf("a1a8", "d8a8", "b2b7"), 2495, "Grandmaster Queen Sacrifice Clearance", 25, 12),
+        Puzzle("level_99", "r3r1k1/5ppp/8/8/3P4/8/1Q3PPP/R5K1 w - - 0 1", listOf("a1a8", "e8a8", "b2b7"), 2498, "Grandmaster Back Rank Domination", 25, 12),
+        Puzzle("level_100", "5r1k/6pp/5N1N/8/2Q5/P7/5PPP/6K1 w - - 0 1", listOf("c4g8", "f8g8", "h6f7"), 2500, "Grandmaster Immortal Smothered Finish", 25, 12)
+    )
 
     fun getPuzzleForLevel(level: Int): Puzzle {
         val index = (level - 1).coerceAtLeast(0) % levelPuzzles.size

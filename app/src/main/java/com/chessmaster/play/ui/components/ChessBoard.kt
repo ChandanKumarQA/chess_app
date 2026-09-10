@@ -169,9 +169,12 @@ fun ChessBoard(
             }
         } // Close Column
 
+        val allArrows = remember(arrows, hintMove) {
+            if (hintMove != null) arrows + Pair(hintMove.from, hintMove.to) else arrows
+        }
         Canvas(modifier = Modifier.fillMaxSize()) {
                 val sqSize = size.width / 8f
-                for ((from, to) in arrows) {
+                for ((from, to) in allArrows) {
                     val fromFile = if (isFlipped) 7 - from.file else from.file
                     val fromRank = if (isFlipped) from.rank else 7 - from.rank
                     val toFile = if (isFlipped) 7 - to.file else to.file

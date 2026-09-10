@@ -107,7 +107,12 @@ fun BoardSettingsScreen(
                         subtitle = currentTheme.name,
                         onClick = onNavigateToBoardPicker,
                         trailingPreview = {
-                            BoardMiniStrip(theme = currentTheme, squareCount = 6, height = 24.dp)
+                            BoardMiniStrip(
+                                theme = currentTheme,
+                                squareCount = 6,
+                                height = 24.dp,
+                                modifier = Modifier.width(90.dp)
+                            )
                         }
                     )
 
@@ -197,13 +202,15 @@ private fun BoardSettingItemRow(
                 text = title,
                 color = Color.White,
                 fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = subtitle,
                 color = Color(0xFF8A93A0),
-                fontSize = 13.sp
+                fontSize = 13.sp,
+                maxLines = 1
             )
         }
 

@@ -515,3 +515,166 @@ fun ScenicDaisyFlowers(modifier: Modifier = Modifier.size(36.dp)) {
         drawCircle(color = Color(0xFFFFCA28), radius = w * 0.045f, center = flower2)
     }
 }
+
+@Composable
+fun ScenicRockyMountainWithGoat(modifier: Modifier = Modifier.size(90.dp)) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+
+        // Ground shadow
+        drawOval(
+            color = Color(0x33000000),
+            topLeft = Offset(w * 0.1f, h * 0.82f),
+            size = Size(w * 0.8f, h * 0.16f)
+        )
+
+        // Large Grey Mountain Boulders
+        val pathBack = Path().apply {
+            moveTo(w * 0.15f, h * 0.85f)
+            lineTo(w * 0.35f, h * 0.40f)
+            lineTo(w * 0.65f, h * 0.32f)
+            lineTo(w * 0.88f, h * 0.85f)
+            close()
+        }
+        drawPath(pathBack, color = Color(0xFF758A99))
+
+        val pathFront = Path().apply {
+            moveTo(w * 0.10f, h * 0.88f)
+            lineTo(w * 0.30f, h * 0.48f)
+            lineTo(w * 0.55f, h * 0.36f)
+            lineTo(w * 0.75f, h * 0.88f)
+            close()
+        }
+        drawPath(pathFront, color = Color(0xFF8E9AAF))
+
+        // Rock highlight facet
+        val pathFacet = Path().apply {
+            moveTo(w * 0.30f, h * 0.48f)
+            lineTo(w * 0.55f, h * 0.36f)
+            lineTo(w * 0.48f, h * 0.88f)
+            close()
+        }
+        drawPath(pathFacet, color = Color(0xFFA2B0C4))
+
+        // Grass patches around base
+        drawOval(color = Color(0xFF43A047), topLeft = Offset(w * 0.08f, h * 0.80f), size = Size(w * 0.35f, h * 0.12f))
+        drawOval(color = Color(0xFF388E3C), topLeft = Offset(w * 0.60f, h * 0.82f), size = Size(w * 0.32f, h * 0.10f))
+
+        // Mountain Goat on Peak
+        val goatCenter = Offset(w * 0.48f, h * 0.28f)
+
+        // Goat Legs
+        drawLine(color = Color(0xFF5D4037), start = Offset(goatCenter.x - w * 0.08f, goatCenter.y), end = Offset(goatCenter.x - w * 0.08f, goatCenter.y + h * 0.10f), strokeWidth = w * 0.035f)
+        drawLine(color = Color(0xFF5D4037), start = Offset(goatCenter.x - w * 0.03f, goatCenter.y), end = Offset(goatCenter.x - w * 0.03f, goatCenter.y + h * 0.10f), strokeWidth = w * 0.035f)
+        drawLine(color = Color(0xFF5D4037), start = Offset(goatCenter.x + w * 0.03f, goatCenter.y), end = Offset(goatCenter.x + w * 0.03f, goatCenter.y + h * 0.10f), strokeWidth = w * 0.035f)
+        drawLine(color = Color(0xFF5D4037), start = Offset(goatCenter.x + w * 0.08f, goatCenter.y), end = Offset(goatCenter.x + w * 0.08f, goatCenter.y + h * 0.10f), strokeWidth = w * 0.035f)
+
+        // Goat Body
+        drawOval(
+            color = Color(0xFFC0A080),
+            topLeft = Offset(goatCenter.x - w * 0.12f, goatCenter.y - h * 0.07f),
+            size = Size(w * 0.24f, h * 0.12f)
+        )
+
+        // Goat Head & Neck
+        val headCenter = Offset(goatCenter.x - w * 0.08f, goatCenter.y - h * 0.08f)
+        drawCircle(color = Color(0xFFD4B896), radius = w * 0.06f, center = headCenter)
+
+        // Goat Horns
+        val hornPath1 = Path().apply {
+            moveTo(headCenter.x, headCenter.y - h * 0.04f)
+            quadraticTo(headCenter.x + w * 0.04f, headCenter.y - h * 0.12f, headCenter.x + w * 0.08f, headCenter.y - h * 0.08f)
+        }
+        drawPath(hornPath1, color = Color(0xFF4A3B32), style = Stroke(width = w * 0.03f))
+
+        // Goat Beard
+        val beardPath = Path().apply {
+            moveTo(headCenter.x - w * 0.04f, headCenter.y + h * 0.03f)
+            lineTo(headCenter.x - w * 0.06f, headCenter.y + h * 0.09f)
+            lineTo(headCenter.x - w * 0.01f, headCenter.y + h * 0.04f)
+            close()
+        }
+        drawPath(beardPath, color = Color.White)
+    }
+}
+
+@Composable
+fun ScenicWhiteCastleTower(modifier: Modifier = Modifier.size(90.dp)) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+
+        // Ground shadow
+        drawOval(
+            color = Color(0x33000000),
+            topLeft = Offset(w * 0.15f, h * 0.82f),
+            size = Size(w * 0.7f, h * 0.16f)
+        )
+
+        // Base Grass & Flowers
+        drawOval(color = Color(0xFF43A047), topLeft = Offset(w * 0.12f, h * 0.78f), size = Size(w * 0.76f, h * 0.14f))
+
+        // Castle Tower Body
+        val towerLeft = w * 0.30f
+        val towerTop = h * 0.32f
+        val towerW = w * 0.40f
+        val towerH = h * 0.50f
+
+        drawRoundRect(
+            color = Color(0xFFE9ECEF),
+            topLeft = Offset(towerLeft, towerTop),
+            size = Size(towerW, towerH),
+            cornerRadius = CornerRadius(w * 0.02f)
+        )
+        // Shading on right side
+        drawRect(
+            color = Color(0xFFCED4DA),
+            topLeft = Offset(towerLeft + towerW * 0.6f, towerTop),
+            size = Size(towerW * 0.4f, towerH)
+        )
+
+        // Battlements / Crenellations at Top
+        val battlementTop = h * 0.24f
+        val battlementH = h * 0.09f
+        drawRect(
+            color = Color(0xFFDEE2E6),
+            topLeft = Offset(towerLeft - w * 0.04f, battlementTop),
+            size = Size(towerW + w * 0.08f, battlementH)
+        )
+        // Cut out gaps
+        val gapW = w * 0.08f
+        drawRect(color = Color.Transparent, topLeft = Offset(towerLeft, battlementTop), size = Size(gapW, battlementH * 0.5f))
+        drawRect(color = Color.Transparent, topLeft = Offset(towerLeft + towerW * 0.4f, battlementTop), size = Size(gapW, battlementH * 0.5f))
+
+        // Flagpole & Flag
+        val poleX = towerLeft + towerW * 0.5f
+        drawLine(color = Color(0xFF495057), start = Offset(poleX, battlementTop), end = Offset(poleX, h * 0.08f), strokeWidth = w * 0.025f)
+
+        val flagPath = Path().apply {
+            moveTo(poleX, h * 0.08f)
+            lineTo(poleX + w * 0.22f, h * 0.14f)
+            lineTo(poleX, h * 0.20f)
+            close()
+        }
+        drawPath(flagPath, color = Color(0xFFE85D04))
+
+        // Green Ivy Vines wrapping around tower
+        val vinePath = Path().apply {
+            moveTo(towerLeft + w * 0.05f, towerTop + towerH)
+            quadraticTo(towerLeft + towerW * 0.5f, towerTop + towerH * 0.6f, towerLeft + w * 0.05f, towerTop + towerH * 0.3f)
+            quadraticTo(towerLeft + towerW * 0.8f, towerTop + towerH * 0.1f, towerLeft + towerW * 0.9f, towerTop)
+        }
+        drawPath(vinePath, color = Color(0xFF2B9348), style = Stroke(width = w * 0.04f))
+
+        // Small leaves on vine
+        drawCircle(color = Color(0xFF55A630), radius = w * 0.035f, center = Offset(towerLeft + w * 0.18f, towerTop + towerH * 0.7f))
+        drawCircle(color = Color(0xFF55A630), radius = w * 0.035f, center = Offset(towerLeft + w * 0.25f, towerTop + towerH * 0.45f))
+        drawCircle(color = Color(0xFF55A630), radius = w * 0.035f, center = Offset(towerLeft + w * 0.65f, towerTop + towerH * 0.2f))
+
+        // Small white daisy flowers at base
+        drawCircle(color = Color.White, radius = w * 0.03f, center = Offset(towerLeft - w * 0.05f, h * 0.82f))
+        drawCircle(color = Color(0xFFFFB703), radius = w * 0.015f, center = Offset(towerLeft - w * 0.05f, h * 0.82f))
+    }
+}
+

@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.FormatListBulleted
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -87,7 +88,7 @@ fun AdventureLevelMap(
         scrollState.scrollTo(targetPx)
     }
 
-    Box(modifier = modifier.fillMaxSize().background(Color(0xFF142416))) {
+    Box(modifier = modifier.fillMaxSize().background(Color(0xFF677C6A))) {
         // Scrollable Adventure Map Container
         Box(
             modifier = Modifier
@@ -158,12 +159,103 @@ fun AdventureLevelMap(
                 SummitPeakBanner(
                     modifier = Modifier
                         .align(Alignment.TopCenter)
-                        .padding(top = 40.dp)
+                        .padding(top = 70.dp)
                 )
             }
         }
 
-        // Floating Jump-To-Current-Level Button (Top-Right of Dock)
+        // Top Header Translucent Pill ({17} Puzzles)
+        Surface(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 16.dp),
+            shape = RoundedCornerShape(20.dp),
+            color = Color(0xCC2A342C)
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(Color(0xFF4A5A4D)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Extension,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(14.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Puzzles", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold)
+            }
+        }
+
+        // Floating Overlays above Bottom Dock:
+        // Bottom Left Score & Progress Bar
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(start = 16.dp, bottom = 125.dp)
+        ) {
+            Text(
+                text = "14,031",
+                color = Color.White,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.ExtraBold
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .width(160.dp)
+                        .height(8.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(Color(0xFF223024))
+                ) {
+                    val frac = (highestUnlockedLevel.toFloat() / totalLevels.toFloat()).coerceIn(0.08f, 1f)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(frac)
+                            .fillMaxHeight()
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(Color(0xFF86CC4C))
+                    )
+                }
+                Spacer(modifier = Modifier.width(6.dp))
+                // Badge {18}
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = Color(0xFF2A362D),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF4A5A4D))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Extension,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Spacer(modifier = Modifier.width(3.dp))
+                        Text(
+                            text = "$highestUnlockedLevel",
+                            color = Color.White,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+        }
+
+        // Floating Jump-To-Current-Level Button (Bottom Right)
         FloatingActionButton(
             onClick = {
                 coroutineScope.launch {
@@ -171,23 +263,23 @@ fun AdventureLevelMap(
                     scrollState.animateScrollTo(targetPx)
                 }
             },
-            containerColor = Color(0xFF263238),
-            contentColor = Color(0xFFFFD54F),
+            containerColor = Color(0xFF2D3830),
+            contentColor = Color.White,
             shape = CircleShape,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 16.dp, bottom = 145.dp)
-                .size(44.dp)
+                .padding(end = 16.dp, bottom = 125.dp)
+                .size(46.dp)
                 .shadow(8.dp, CircleShape)
         ) {
             Icon(
-                imageVector = Icons.Default.GpsFixed,
-                contentDescription = "Jump to Current Level",
-                modifier = Modifier.size(22.dp)
+                imageVector = Icons.Default.KeyboardArrowUp,
+                contentDescription = "Scroll to Active Level",
+                modifier = Modifier.size(28.dp)
             )
         }
 
-        // Floating Bottom Action Dock
+        // Floating Bottom Action Dock & Bottom Nav
         AdventureBottomDock(
             scoreOrXpText = scoreOrXpText,
             ratingSubtitle = ratingSubtitle,
@@ -195,10 +287,7 @@ fun AdventureLevelMap(
             totalLevels = totalLevels,
             onPlay = onPlayCurrentLevel,
             onToggleGridView = onToggleGridView,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 12.dp)
+            modifier = Modifier.align(Alignment.BottomCenter)
         )
     }
 }
@@ -224,11 +313,27 @@ private fun LandmarkForLevel(
                 )
             )
         }
+        7 -> {
+            ScenicWhiteCastleTower(
+                modifier = Modifier.offset(
+                    x = if (isLeftOfCenter) nodeXDp + 65.dp else nodeXDp - 95.dp,
+                    y = nodeYDp - 35.dp
+                )
+            )
+        }
         9 -> {
             ScenicAppleTree(
                 modifier = Modifier.offset(
                     x = if (isLeftOfCenter) nodeXDp + 68.dp else nodeXDp - 88.dp,
                     y = nodeYDp - 25.dp
+                )
+            )
+        }
+        12 -> {
+            ScenicRockyMountainWithGoat(
+                modifier = Modifier.offset(
+                    x = if (isLeftOfCenter) nodeXDp + 70.dp else nodeXDp - 98.dp,
+                    y = nodeYDp - 40.dp
                 )
             )
         }
@@ -265,7 +370,7 @@ private fun LandmarkForLevel(
             )
         }
         42 -> {
-            ScenicAppleTree(
+            ScenicWhiteCastleTower(
                 modifier = Modifier.offset(
                     x = if (isLeftOfCenter) nodeXDp + 68.dp else nodeXDp - 88.dp,
                     y = nodeYDp - 25.dp
@@ -313,7 +418,7 @@ private fun LandmarkForLevel(
             )
         }
         93 -> {
-            ScenicAppleTree(
+            ScenicRockyMountainWithGoat(
                 modifier = Modifier.offset(
                     x = if (isLeftOfCenter) nodeXDp + 68.dp else nodeXDp - 88.dp,
                     y = nodeYDp - 25.dp
@@ -336,9 +441,9 @@ private fun LandmarkForLevel(
  */
 private fun DrawScope.drawMeadowCheckeredBackground(width: Float, height: Float) {
     val tileSize = 70f
-    val color1 = Color(0xFF132A17)
-    val color2 = Color(0xFF19361E)
-    val grassDot = Color(0x334CAF50)
+    val color1 = Color(0xFF6B806E)
+    val color2 = Color(0xFF7A9380)
+    val grassDot = Color(0x33FFFFFF)
 
     val rows = (height / tileSize).toInt() + 1
     val cols = (width / tileSize).toInt() + 1
@@ -487,135 +592,104 @@ fun AdventureBottomDock(
     onToggleGridView: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Surface(
+    Column(
         modifier = modifier
-            .shadow(16.dp, RoundedCornerShape(24.dp)),
-        shape = RoundedCornerShape(24.dp),
-        color = Color(0xFF1B231D),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF2C3E30))
+            .fillMaxWidth()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(Color.Transparent, Color(0xDD121A14), Color(0xFF121A14))
+                )
+            )
+            .padding(top = 8.dp)
     ) {
-        Column(
+        // Dock Row: [≡] List Button + Solve Puzzles CTA Button
+        Row(
             modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 12.dp)
                 .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            // Top Row: Stats & View Toggle
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                // Score / Rating Pill
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .background(Color(0xFF2E3D30)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = "Score",
-                            tint = Color(0xFFFFD54F),
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Column {
-                        Text(
-                            text = scoreOrXpText,
-                            color = Color.White,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = ratingSubtitle,
-                            color = Color(0xFF81C784),
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                }
-
-                // Progress Info & Toggle to Grid
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = "Level $currentLevel/$totalLevels",
-                        color = Color.White.copy(alpha = 0.8f),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    IconButton(
-                        onClick = onToggleGridView,
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFF2A362D))
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.GridView,
-                            contentDescription = "Switch to Grid View",
-                            tint = Color.White.copy(alpha = 0.8f),
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Progress Bar
-            val progressFrac = (currentLevel.toFloat() / totalLevels.toFloat()).coerceIn(0f, 1f)
-            Box(
+            // Square List / Grid View Switcher Button [≡]
+            IconButton(
+                onClick = onToggleGridView,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(6.dp)
-                    .clip(RoundedCornerShape(3.dp))
+                    .size(52.dp)
+                    .clip(RoundedCornerShape(14.dp))
                     .background(Color(0xFF2A362D))
+                    .border(1.dp, Color(0xFF3B4D3F), RoundedCornerShape(14.dp))
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(progressFrac)
-                        .fillMaxHeight()
-                        .clip(RoundedCornerShape(3.dp))
-                        .background(
-                            Brush.horizontalGradient(
-                                listOf(Color(0xFF43A047), Color(0xFF66BB6A), Color(0xFFFFD54F))
-                            )
-                        )
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.FormatListBulleted,
+                    contentDescription = "View Modes",
+                    tint = Color.White,
+                    modifier = Modifier.size(26.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
-
-            // Large Green Action CTA Button ("Solve Puzzles")
+            // Big Vibrant Green CTA Button ("Solve Puzzles")
             Button(
                 onClick = onPlay,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF43A047),
+                    containerColor = Color(0xFF7CB342),
                     contentColor = Color.White
                 ),
                 shape = RoundedCornerShape(16.dp),
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp, pressedElevation = 2.dp),
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
+                    .weight(1f)
+                    .height(52.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.PlayArrow,
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "SOLVE PUZZLES",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    letterSpacing = 1.sp
+                    text = "Solve Puzzles",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.ExtraBold
                 )
             }
         }
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        // Bottom Navigation Bar (5 Items: Home, Puzzles, Learn, Watch, More)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFF141C16))
+                .padding(vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            BottomNavItem(icon = Icons.Default.Person, label = "Home", isSelected = false)
+            BottomNavItem(icon = Icons.Default.Extension, label = "Puzzles", isSelected = true)
+            BottomNavItem(icon = Icons.Default.School, label = "Learn", isSelected = false)
+            BottomNavItem(icon = Icons.Default.Visibility, label = "Watch", isSelected = false)
+            BottomNavItem(icon = Icons.Default.Menu, label = "More", isSelected = false)
+        }
+    }
+}
+
+@Composable
+private fun BottomNavItem(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    isSelected: Boolean
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.padding(horizontal = 4.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = label,
+            tint = if (isSelected) Color.White else Color(0xFF7E8F81),
+            modifier = Modifier.size(22.dp)
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+            text = label,
+            color = if (isSelected) Color.White else Color(0xFF7E8F81),
+            fontSize = 10.sp,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+        )
     }
 }

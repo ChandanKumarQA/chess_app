@@ -62,11 +62,7 @@ object SurvivalDatabase {
                 ?: distinctPool.firstOrNull { !usedFens.contains(it.fen) }
                 ?: distinctPool[(i - 1) % distinctPool.size]
 
-            var fen = candidate.fen
-            if (fen in usedFens) {
-                val variations = PuzzleVariationHelper.getUniqueVariations(candidate.fen, candidate.solutionMoves, 25)
-                fen = variations.firstOrNull { it !in usedFens } ?: candidate.fen
-            }
+            val fen = candidate.fen
             usedFens.add(fen)
 
             Puzzle(
