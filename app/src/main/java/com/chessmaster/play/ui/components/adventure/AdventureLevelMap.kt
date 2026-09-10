@@ -64,17 +64,16 @@ fun AdventureLevelMap(
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
-    val coroutineScope = rememberCoroutineScope()
     val configuration = LocalConfiguration.current
     val density = LocalDensity.current
 
     val screenWidthDp = configuration.screenWidthDp.dp
     val stepHeightDp = 92.dp
-    val bottomDockSpaceDp = 150.dp
-    val topPeakSpaceDp = 120.dp
+    val bottomDockSpaceDp = 50.dp
+    val topPeakSpaceDp = 70.dp
     val totalMapHeightDp = (stepHeightDp * totalLevels) + bottomDockSpaceDp + topPeakSpaceDp
 
-    // Calculate Y scroll position for a given level (Level 1 is near bottom, Level 100 near top)
+    // Calculate Y scroll position for a given level (Level 1 near bottom, Level 100 near top)
     fun getLevelScrollPositionPx(level: Int): Int {
         val clamped = level.coerceIn(1, totalLevels)
         val levelYDp = totalMapHeightDp - bottomDockSpaceDp - (stepHeightDp * (clamped - 1))
@@ -138,7 +137,7 @@ fun AdventureLevelMap(
 
                     val nodeXDp = with(density) { nodeXPx.toDp() }
 
-                    // Place Scenic Landmark at outer curves
+                    // Place Scenic Landmark at outer curves & trees along path
                     LandmarkForLevel(level = level, nodeXDp = nodeXDp, nodeYDp = nodeYDp, screenWidthDp = screenWidthDp)
 
                     // Stepping Stone Level Node
@@ -159,141 +158,16 @@ fun AdventureLevelMap(
                 SummitPeakBanner(
                     modifier = Modifier
                         .align(Alignment.TopCenter)
-                        .padding(top = 70.dp)
+                        .padding(top = 20.dp)
                 )
             }
         }
-
-        // Top Header Translucent Pill ({17} Puzzles)
-        Surface(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = 16.dp),
-            shape = RoundedCornerShape(20.dp),
-            color = Color(0xCC2A342C)
-        ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(Color(0xFF4A5A4D)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Extension,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(14.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Puzzles", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold)
-            }
-        }
-
-        // Floating Overlays above Bottom Dock:
-        // Bottom Left Score & Progress Bar
-        Column(
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(start = 16.dp, bottom = 125.dp)
-        ) {
-            Text(
-                text = "14,031",
-                color = Color.White,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.ExtraBold
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .width(160.dp)
-                        .height(8.dp)
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(Color(0xFF223024))
-                ) {
-                    val frac = (highestUnlockedLevel.toFloat() / totalLevels.toFloat()).coerceIn(0.08f, 1f)
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth(frac)
-                            .fillMaxHeight()
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(Color(0xFF86CC4C))
-                    )
-                }
-                Spacer(modifier = Modifier.width(6.dp))
-                // Badge {18}
-                Surface(
-                    shape = RoundedCornerShape(6.dp),
-                    color = Color(0xFF2A362D),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF4A5A4D))
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Extension,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(12.dp)
-                        )
-                        Spacer(modifier = Modifier.width(3.dp))
-                        Text(
-                            text = "$highestUnlockedLevel",
-                            color = Color.White,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-            }
-        }
-
-        // Floating Jump-To-Current-Level Button (Bottom Right)
-        FloatingActionButton(
-            onClick = {
-                coroutineScope.launch {
-                    val targetPx = getLevelScrollPositionPx(highestUnlockedLevel)
-                    scrollState.animateScrollTo(targetPx)
-                }
-            },
-            containerColor = Color(0xFF2D3830),
-            contentColor = Color.White,
-            shape = CircleShape,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 16.dp, bottom = 125.dp)
-                .size(46.dp)
-                .shadow(8.dp, CircleShape)
-        ) {
-            Icon(
-                imageVector = Icons.Default.KeyboardArrowUp,
-                contentDescription = "Scroll to Active Level",
-                modifier = Modifier.size(28.dp)
-            )
-        }
-
-        // Floating Bottom Action Dock & Bottom Nav
-        AdventureBottomDock(
-            scoreOrXpText = scoreOrXpText,
-            ratingSubtitle = ratingSubtitle,
-            currentLevel = highestUnlockedLevel,
-            totalLevels = totalLevels,
-            onPlay = onPlayCurrentLevel,
-            onToggleGridView = onToggleGridView,
-            modifier = Modifier.align(Alignment.BottomCenter)
-        )
     }
 }
 
 /**
- * Checks if a scenic landmark should be placed near this level and positions it on the outer bend.
+ * Places scenic landmarks, trees, pine trees, bushes, flowers, mushrooms, ponds, cabins, benches,
+ * goats, castles, monuments, and flags according to EASY, MODERATE, and HARD world biomes.
  */
 @Composable
 private fun LandmarkForLevel(
@@ -303,152 +177,120 @@ private fun LandmarkForLevel(
     screenWidthDp: Dp
 ) {
     val isLeftOfCenter = nodeXDp < (screenWidthDp / 2)
+    val leftX = (nodeXDp - 75.dp).coerceAtLeast(10.dp)
+    val rightX = (nodeXDp + 65.dp).coerceAtMost(screenWidthDp - 75.dp)
+    val decorX = if (isLeftOfCenter) rightX else leftX
+    val oppX = if (isLeftOfCenter) leftX else rightX
 
-    when (level) {
-        5 -> {
-            ScenicDaisyFlowers(
-                modifier = Modifier.offset(
-                    x = if (isLeftOfCenter) nodeXDp + 60.dp else nodeXDp - 70.dp,
-                    y = nodeYDp - 10.dp
-                )
-            )
+    when {
+        // === EASY WORLD (Levels 1 - 35): Peaceful Friendly Forest ===
+        level <= 35 -> {
+            when (level) {
+                5 -> ScenicDaisyFlowers(modifier = Modifier.offset(x = decorX, y = nodeYDp - 10.dp))
+                10 -> ScenicMilestoneChest(modifier = Modifier.offset(x = oppX, y = nodeYDp - 22.dp))
+                15 -> ScenicPondWithFrog(modifier = Modifier.offset(x = decorX, y = nodeYDp - 30.dp))
+                21 -> ScenicWoodenBench(modifier = Modifier.offset(x = oppX, y = nodeYDp - 20.dp))
+                28 -> ScenicCozyCabin(modifier = Modifier.offset(x = decorX, y = nodeYDp - 35.dp))
+            }
+            when (level % 4) {
+                1 -> {
+                    ScenicAppleTree(modifier = Modifier.offset(x = decorX, y = nodeYDp - 25.dp))
+                    ScenicBushCluster(modifier = Modifier.offset(x = oppX, y = nodeYDp + 10.dp))
+                }
+                2 -> {
+                    ScenicDaisyFlowers(modifier = Modifier.offset(x = oppX, y = nodeYDp - 15.dp))
+                    ScenicMushroomCluster(modifier = Modifier.offset(x = decorX, y = nodeYDp + 5.dp))
+                }
+                3 -> {
+                    ScenicAppleTree(modifier = Modifier.offset(x = oppX, y = nodeYDp - 25.dp))
+                }
+                0 -> {
+                    ScenicBushCluster(modifier = Modifier.offset(x = decorX, y = nodeYDp - 10.dp))
+                    ScenicDaisyFlowers(modifier = Modifier.offset(x = oppX, y = nodeYDp + 5.dp))
+                }
+            }
         }
-        7 -> {
-            ScenicWhiteCastleTower(
-                modifier = Modifier.offset(
-                    x = if (isLeftOfCenter) nodeXDp + 65.dp else nodeXDp - 95.dp,
-                    y = nodeYDp - 35.dp
-                )
-            )
+
+        // === MODERATE WORLD (Levels 36 - 70): Adventurous Foothills & Pine Ruins ===
+        level in 36..70 -> {
+            when (level) {
+                38 -> ScenicWhiteCastleTower(modifier = Modifier.offset(x = decorX, y = nodeYDp - 35.dp))
+                45 -> ScenicWoodenBridgeOverStream(modifier = Modifier.offset(x = oppX, y = nodeYDp - 25.dp))
+                52 -> ScenicAncientRuins(modifier = Modifier.offset(x = decorX, y = nodeYDp - 30.dp))
+                60 -> ScenicWaterfallCliff(modifier = Modifier.offset(x = oppX, y = nodeYDp - 35.dp))
+                65 -> ScenicMilestoneChest(modifier = Modifier.offset(x = decorX, y = nodeYDp - 22.dp))
+            }
+            when (level % 4) {
+                1 -> {
+                    ScenicPineTree(modifier = Modifier.offset(x = decorX, y = nodeYDp - 20.dp))
+                    ScenicStoneMonumentWithFlag(modifier = Modifier.offset(x = oppX, y = nodeYDp + 10.dp))
+                }
+                2 -> {
+                    ScenicStoneMonumentWithFlag(modifier = Modifier.offset(x = oppX, y = nodeYDp - 25.dp))
+                    ScenicPineTree(modifier = Modifier.offset(x = decorX, y = nodeYDp + 5.dp))
+                }
+                3 -> {
+                    ScenicPineTree(modifier = Modifier.offset(x = oppX, y = nodeYDp - 20.dp))
+                }
+                0 -> {
+                    ScenicStoneMonumentWithFlag(modifier = Modifier.offset(x = decorX, y = nodeYDp - 25.dp))
+                    ScenicPineTree(modifier = Modifier.offset(x = oppX, y = nodeYDp + 5.dp))
+                }
+            }
         }
-        9 -> {
-            ScenicAppleTree(
-                modifier = Modifier.offset(
-                    x = if (isLeftOfCenter) nodeXDp + 68.dp else nodeXDp - 88.dp,
-                    y = nodeYDp - 25.dp
-                )
-            )
-        }
-        12 -> {
-            ScenicRockyMountainWithGoat(
-                modifier = Modifier.offset(
-                    x = if (isLeftOfCenter) nodeXDp + 70.dp else nodeXDp - 98.dp,
-                    y = nodeYDp - 40.dp
-                )
-            )
-        }
-        15 -> {
-            ScenicPondWithFrog(
-                modifier = Modifier.offset(
-                    x = if (isLeftOfCenter) nodeXDp + 65.dp else nodeXDp - 95.dp,
-                    y = nodeYDp - 30.dp
-                )
-            )
-        }
-        21 -> {
-            ScenicWoodenBench(
-                modifier = Modifier.offset(
-                    x = if (isLeftOfCenter) nodeXDp + 65.dp else nodeXDp - 88.dp,
-                    y = nodeYDp - 20.dp
-                )
-            )
-        }
-        25 -> {
-            ScenicMilestoneChest(
-                modifier = Modifier.offset(
-                    x = if (isLeftOfCenter) nodeXDp + 64.dp else nodeXDp - 84.dp,
-                    y = nodeYDp - 22.dp
-                )
-            )
-        }
-        33 -> {
-            ScenicCozyCabin(
-                modifier = Modifier.offset(
-                    x = if (isLeftOfCenter) nodeXDp + 68.dp else nodeXDp - 96.dp,
-                    y = nodeYDp - 35.dp
-                )
-            )
-        }
-        42 -> {
-            ScenicWhiteCastleTower(
-                modifier = Modifier.offset(
-                    x = if (isLeftOfCenter) nodeXDp + 68.dp else nodeXDp - 88.dp,
-                    y = nodeYDp - 25.dp
-                )
-            )
-        }
-        50 -> {
-            ScenicMilestoneChest(
-                modifier = Modifier.offset(
-                    x = if (isLeftOfCenter) nodeXDp + 64.dp else nodeXDp - 84.dp,
-                    y = nodeYDp - 22.dp
-                )
-            )
-        }
-        59 -> {
-            ScenicPondWithFrog(
-                modifier = Modifier.offset(
-                    x = if (isLeftOfCenter) nodeXDp + 65.dp else nodeXDp - 95.dp,
-                    y = nodeYDp - 30.dp
-                )
-            )
-        }
-        68 -> {
-            ScenicWoodenBench(
-                modifier = Modifier.offset(
-                    x = if (isLeftOfCenter) nodeXDp + 65.dp else nodeXDp - 88.dp,
-                    y = nodeYDp - 20.dp
-                )
-            )
-        }
-        75 -> {
-            ScenicMilestoneChest(
-                modifier = Modifier.offset(
-                    x = if (isLeftOfCenter) nodeXDp + 64.dp else nodeXDp - 84.dp,
-                    y = nodeYDp - 22.dp
-                )
-            )
-        }
-        84 -> {
-            ScenicCozyCabin(
-                modifier = Modifier.offset(
-                    x = if (isLeftOfCenter) nodeXDp + 68.dp else nodeXDp - 96.dp,
-                    y = nodeYDp - 35.dp
-                )
-            )
-        }
-        93 -> {
-            ScenicRockyMountainWithGoat(
-                modifier = Modifier.offset(
-                    x = if (isLeftOfCenter) nodeXDp + 68.dp else nodeXDp - 88.dp,
-                    y = nodeYDp - 25.dp
-                )
-            )
-        }
-        100 -> {
-            ScenicMilestoneChest(
-                modifier = Modifier.offset(
-                    x = if (isLeftOfCenter) nodeXDp + 64.dp else nodeXDp - 84.dp,
-                    y = nodeYDp - 22.dp
-                )
-            )
+
+        // === HARD WORLD (Levels 71 - 100): Dramatic Mountain Summit & Dragon Monuments ===
+        else -> {
+            when (level) {
+                75 -> ScenicMilestoneChest(modifier = Modifier.offset(x = oppX, y = nodeYDp - 22.dp))
+                80 -> ScenicRockyMountainWithGoat(modifier = Modifier.offset(x = decorX, y = nodeYDp - 40.dp))
+                88 -> ScenicDragonStoneStatue(modifier = Modifier.offset(x = oppX, y = nodeYDp - 30.dp))
+                95 -> ScenicRockyMountainWithGoat(modifier = Modifier.offset(x = decorX, y = nodeYDp - 40.dp))
+                100 -> ScenicMilestoneChest(modifier = Modifier.offset(x = oppX, y = nodeYDp - 22.dp))
+            }
+            when (level % 4) {
+                1 -> {
+                    ScenicGlowingCrystalMushrooms(modifier = Modifier.offset(x = decorX, y = nodeYDp - 15.dp))
+                    ScenicDragonStoneStatue(modifier = Modifier.offset(x = oppX, y = nodeYDp + 10.dp))
+                }
+                2 -> {
+                    ScenicPineTree(modifier = Modifier.offset(x = oppX, y = nodeYDp - 20.dp))
+                    ScenicGlowingCrystalMushrooms(modifier = Modifier.offset(x = decorX, y = nodeYDp + 5.dp))
+                }
+                3 -> {
+                    ScenicDragonStoneStatue(modifier = Modifier.offset(x = oppX, y = nodeYDp - 25.dp))
+                }
+                0 -> {
+                    ScenicGlowingCrystalMushrooms(modifier = Modifier.offset(x = decorX, y = nodeYDp - 15.dp))
+                    ScenicPineTree(modifier = Modifier.offset(x = oppX, y = nodeYDp + 5.dp))
+                }
+            }
         }
     }
 }
 
 /**
- * Draws the checkered forest meadow canvas background with subtle grass variations.
+ * Draws the checkered forest meadow canvas background with dynamic biome transitions:
+ * - EASY WORLD (Levels 1-35): Bright soft sage grass
+ * - MODERATE WORLD (Levels 36-70): Deep pine forest green
+ * - HARD WORLD (Levels 71-100): Dark mountain slate green
  */
 private fun DrawScope.drawMeadowCheckeredBackground(width: Float, height: Float) {
     val tileSize = 70f
-    val color1 = Color(0xFF6B806E)
-    val color2 = Color(0xFF7A9380)
     val grassDot = Color(0x33FFFFFF)
 
     val rows = (height / tileSize).toInt() + 1
     val cols = (width / tileSize).toInt() + 1
 
     for (r in 0 until rows) {
+        val yFrac = 1.0f - (r.toFloat() / rows.toFloat()) // 0.0 at bottom (Level 1), 1.0 at top (Level 100)
+
+        val (color1, color2) = when {
+            yFrac < 0.35f -> Color(0xFF6B806E) to Color(0xFF7A9380) // EASY WORLD: Bright soft green
+            yFrac < 0.70f -> Color(0xFF4A5F4E) to Color(0xFF58705C) // MODERATE WORLD: Deep pine forest green
+            else -> Color(0xFF2C3B32) to Color(0xFF37493E)          // HARD WORLD: Dark mountain slate green
+        }
+
         for (c in 0 until cols) {
             val isEven = (r + c) % 2 == 0
             val x = c * tileSize
@@ -477,7 +319,7 @@ private fun DrawScope.drawMeadowCheckeredBackground(width: Float, height: Float)
 }
 
 /**
- * Draws the stepping stone connector path between consecutive levels.
+ * Draws the stepping stone connector path between consecutive levels with biome color transitions.
  */
 private fun DrawScope.drawTrailConnectingStones(
     totalLevels: Int,
@@ -501,8 +343,14 @@ private fun DrawScope.drawTrailConnectingStones(
         val y2 = totalHeight - bottomPadding - (stepHeight * level)
 
         val isPathUnlocked = level < highestUnlockedLevel
-        val stoneFill = if (isPathUnlocked) Color(0xFF4CAF50) else Color(0xFF2A3D2F)
-        val stoneRim = if (isPathUnlocked) Color(0xFF81C784) else Color(0xFF1E2B21)
+
+        // Biome-specific connector stone colors
+        val (stoneFill, stoneRim) = when {
+            !isPathUnlocked -> Color(0xFF2A3D2F) to Color(0xFF1E2B21)
+            level <= 35 -> Color(0xFF4CAF50) to Color(0xFF81C784)    // EASY: Bright green
+            level <= 70 -> Color(0xFF388E3C) to Color(0xFF66BB6A)    // MODERATE: Forest green
+            else -> Color(0xFF1B5E20) to Color(0xFF4CAF50)           // HARD: Emerald green
+        }
 
         // Draw 3 stepping stones along the curve connecting level to level+1
         val numStones = 3
@@ -582,114 +430,4 @@ private fun SummitPeakBanner(modifier: Modifier = Modifier) {
  * - View toggle (Map vs Grid)
  * - Big vibrant green "Solve Puzzles" button
  */
-@Composable
-fun AdventureBottomDock(
-    scoreOrXpText: String,
-    ratingSubtitle: String,
-    currentLevel: Int,
-    totalLevels: Int,
-    onPlay: () -> Unit,
-    onToggleGridView: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(Color.Transparent, Color(0xDD121A14), Color(0xFF121A14))
-                )
-            )
-            .padding(top = 8.dp)
-    ) {
-        // Dock Row: [≡] List Button + Solve Puzzles CTA Button
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            // Square List / Grid View Switcher Button [≡]
-            IconButton(
-                onClick = onToggleGridView,
-                modifier = Modifier
-                    .size(52.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(Color(0xFF2A362D))
-                    .border(1.dp, Color(0xFF3B4D3F), RoundedCornerShape(14.dp))
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.FormatListBulleted,
-                    contentDescription = "View Modes",
-                    tint = Color.White,
-                    modifier = Modifier.size(26.dp)
-                )
-            }
 
-            // Big Vibrant Green CTA Button ("Solve Puzzles")
-            Button(
-                onClick = onPlay,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF7CB342),
-                    contentColor = Color.White
-                ),
-                shape = RoundedCornerShape(16.dp),
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp, pressedElevation = 2.dp),
-                modifier = Modifier
-                    .weight(1f)
-                    .height(52.dp)
-            ) {
-                Text(
-                    text = "Solve Puzzles",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.ExtraBold
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        // Bottom Navigation Bar (5 Items: Home, Puzzles, Learn, Watch, More)
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0xFF141C16))
-                .padding(vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceAround,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            BottomNavItem(icon = Icons.Default.Person, label = "Home", isSelected = false)
-            BottomNavItem(icon = Icons.Default.Extension, label = "Puzzles", isSelected = true)
-            BottomNavItem(icon = Icons.Default.School, label = "Learn", isSelected = false)
-            BottomNavItem(icon = Icons.Default.Visibility, label = "Watch", isSelected = false)
-            BottomNavItem(icon = Icons.Default.Menu, label = "More", isSelected = false)
-        }
-    }
-}
-
-@Composable
-private fun BottomNavItem(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    label: String,
-    isSelected: Boolean
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.padding(horizontal = 4.dp)
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = label,
-            tint = if (isSelected) Color.White else Color(0xFF7E8F81),
-            modifier = Modifier.size(22.dp)
-        )
-        Spacer(modifier = Modifier.height(2.dp))
-        Text(
-            text = label,
-            color = if (isSelected) Color.White else Color(0xFF7E8F81),
-            fontSize = 10.sp,
-            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-        )
-    }
-}

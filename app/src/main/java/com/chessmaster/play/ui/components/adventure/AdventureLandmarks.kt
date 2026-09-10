@@ -678,3 +678,337 @@ fun ScenicWhiteCastleTower(modifier: Modifier = Modifier.size(90.dp)) {
     }
 }
 
+@Composable
+fun ScenicPineTree(modifier: Modifier = Modifier.size(64.dp)) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+
+        // Ground shadow
+        drawOval(
+            color = Color(0x33000000),
+            topLeft = Offset(w * 0.2f, h * 0.80f),
+            size = Size(w * 0.6f, h * 0.18f)
+        )
+
+        // Trunk
+        drawRect(
+            color = Color(0xFF4E342E),
+            topLeft = Offset(w * 0.44f, h * 0.65f),
+            size = Size(w * 0.12f, h * 0.22f)
+        )
+
+        // Layer 1 (Bottom wide tier)
+        val p1 = Path().apply {
+            moveTo(w * 0.5f, h * 0.40f)
+            lineTo(w * 0.85f, h * 0.70f)
+            lineTo(w * 0.15f, h * 0.70f)
+            close()
+        }
+        drawPath(p1, color = Color(0xFF1B5E20))
+
+        // Layer 2 (Middle tier)
+        val p2 = Path().apply {
+            moveTo(w * 0.5f, h * 0.22f)
+            lineTo(w * 0.78f, h * 0.50f)
+            lineTo(w * 0.22f, h * 0.50f)
+            close()
+        }
+        drawPath(p2, color = Color(0xFF2E7D32))
+
+        // Layer 3 (Top tier)
+        val p3 = Path().apply {
+            moveTo(w * 0.5f, h * 0.08f)
+            lineTo(w * 0.70f, h * 0.32f)
+            lineTo(w * 0.30f, h * 0.32f)
+            close()
+        }
+        drawPath(p3, color = Color(0xFF388E3C))
+
+        // Specular highlight edge
+        drawLine(
+            color = Color(0xFF81C784),
+            start = Offset(w * 0.5f, h * 0.08f),
+            end = Offset(w * 0.30f, h * 0.32f),
+            strokeWidth = w * 0.03f
+        )
+    }
+}
+
+@Composable
+fun ScenicStoneMonumentWithFlag(modifier: Modifier = Modifier.size(70.dp)) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+
+        // Ground shadow
+        drawOval(
+            color = Color(0x33000000),
+            topLeft = Offset(w * 0.15f, h * 0.80f),
+            size = Size(w * 0.7f, h * 0.16f)
+        )
+
+        // Stone Base
+        drawRoundRect(
+            color = Color(0xFF616161),
+            topLeft = Offset(w * 0.25f, h * 0.65f),
+            size = Size(w * 0.50f, h * 0.20f),
+            cornerRadius = CornerRadius(w * 0.03f)
+        )
+
+        // Stone Obelisk / Pillar
+        val p = Path().apply {
+            moveTo(w * 0.38f, h * 0.22f)
+            lineTo(w * 0.62f, h * 0.22f)
+            lineTo(w * 0.70f, h * 0.65f)
+            lineTo(w * 0.30f, h * 0.65f)
+            close()
+        }
+        drawPath(p, color = Color(0xFF757575))
+
+        // Shading facet
+        val pFacet = Path().apply {
+            moveTo(w * 0.50f, h * 0.22f)
+            lineTo(w * 0.62f, h * 0.22f)
+            lineTo(w * 0.70f, h * 0.65f)
+            lineTo(w * 0.50f, h * 0.65f)
+            close()
+        }
+        drawPath(pFacet, color = Color(0xFF9E9E9E))
+
+        // Pawn emblem carved on stone
+        drawCircle(color = Color(0xFFFFD54F), radius = w * 0.06f, center = Offset(w * 0.50f, h * 0.40f))
+
+        // Red Flag on top of obelisk
+        val poleX = w * 0.50f
+        drawLine(color = Color(0xFF212121), start = Offset(poleX, h * 0.22f), end = Offset(poleX, h * 0.06f), strokeWidth = w * 0.03f)
+
+        val flag = Path().apply {
+            moveTo(poleX, h * 0.06f)
+            lineTo(poleX + w * 0.24f, h * 0.12f)
+            lineTo(poleX, h * 0.18f)
+            close()
+        }
+        drawPath(flag, color = Color(0xFFE53935))
+    }
+}
+
+@Composable
+fun ScenicMushroomCluster(modifier: Modifier = Modifier.size(44.dp)) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+
+        // Stems
+        drawRect(color = Color(0xFFF5F5F5), topLeft = Offset(w * 0.28f, h * 0.50f), size = Size(w * 0.12f, h * 0.35f))
+        drawRect(color = Color(0xFFF5F5F5), topLeft = Offset(w * 0.58f, h * 0.45f), size = Size(w * 0.10f, h * 0.40f))
+
+        // Big Mushroom Cap (Red with White Dots)
+        drawArc(
+            color = Color(0xFFE53935),
+            startAngle = 180f,
+            sweepAngle = 180f,
+            useCenter = true,
+            topLeft = Offset(w * 0.10f, h * 0.20f),
+            size = Size(w * 0.48f, h * 0.35f)
+        )
+        // White dots
+        drawCircle(color = Color.White, radius = w * 0.04f, center = Offset(w * 0.26f, h * 0.28f))
+        drawCircle(color = Color.White, radius = w * 0.03f, center = Offset(w * 0.42f, h * 0.32f))
+        drawCircle(color = Color.White, radius = w * 0.03f, center = Offset(w * 0.18f, h * 0.34f))
+
+        // Small Mushroom Cap (Yellow/Orange with White Dots)
+        drawArc(
+            color = Color(0xFFFB8C00),
+            startAngle = 180f,
+            sweepAngle = 180f,
+            useCenter = true,
+            topLeft = Offset(w * 0.48f, h * 0.25f),
+            size = Size(w * 0.36f, h * 0.26f)
+        )
+        drawCircle(color = Color.White, radius = w * 0.03f, center = Offset(w * 0.64f, h * 0.32f))
+        drawCircle(color = Color.White, radius = w * 0.025f, center = Offset(w * 0.74f, h * 0.36f))
+
+        // Grass tuple at base
+        drawLine(color = Color(0xFF7CB342), start = Offset(w * 0.15f, h * 0.85f), end = Offset(w * 0.10f, h * 0.65f), strokeWidth = w * 0.05f)
+        drawLine(color = Color(0xFF8BC34A), start = Offset(w * 0.80f, h * 0.85f), end = Offset(w * 0.85f, h * 0.62f), strokeWidth = w * 0.05f)
+    }
+}
+
+@Composable
+fun ScenicBushCluster(modifier: Modifier = Modifier.size(52.dp)) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+
+        // Bush puffy circles
+        drawCircle(color = Color(0xFF2E7D32), radius = w * 0.28f, center = Offset(w * 0.35f, h * 0.55f))
+        drawCircle(color = Color(0xFF388E3C), radius = w * 0.28f, center = Offset(w * 0.65f, h * 0.55f))
+        drawCircle(color = Color(0xFF4CAF50), radius = w * 0.26f, center = Offset(w * 0.50f, h * 0.40f))
+
+        // Specular highlight
+        drawCircle(color = Color(0xFF81C784), radius = w * 0.12f, center = Offset(w * 0.42f, h * 0.32f))
+
+        // Tiny flowers on bush
+        drawCircle(color = Color(0xFFFF4081), radius = w * 0.045f, center = Offset(w * 0.30f, h * 0.45f))
+        drawCircle(color = Color(0xFFFFEB3B), radius = w * 0.04f, center = Offset(w * 0.68f, h * 0.42f))
+        drawCircle(color = Color.White, radius = w * 0.04f, center = Offset(w * 0.52f, h * 0.60f))
+    }
+}
+
+@Composable
+fun ScenicAncientRuins(modifier: Modifier = Modifier.size(80.dp)) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+
+        // Ground shadow
+        drawOval(color = Color(0x44000000), topLeft = Offset(w * 0.1f, h * 0.8f), size = Size(w * 0.8f, h * 0.18f))
+
+        // Stone Pillars (Left & Right)
+        val pColor = Color(0xFF78909C)
+        val pDark = Color(0xFF546E7A)
+        drawRoundRect(color = pColor, topLeft = Offset(w * 0.18f, h * 0.32f), size = Size(w * 0.16f, h * 0.52f), cornerRadius = CornerRadius(w * 0.02f))
+        drawRect(color = pDark, topLeft = Offset(w * 0.26f, h * 0.32f), size = Size(w * 0.08f, h * 0.52f))
+
+        drawRoundRect(color = pColor, topLeft = Offset(w * 0.66f, h * 0.32f), size = Size(w * 0.16f, h * 0.52f), cornerRadius = CornerRadius(w * 0.02f))
+        drawRect(color = pDark, topLeft = Offset(w * 0.74f, h * 0.32f), size = Size(w * 0.08f, h * 0.52f))
+
+        // Archway Beam
+        drawRoundRect(color = Color(0xFF90A4AE), topLeft = Offset(w * 0.12f, h * 0.22f), size = Size(w * 0.76f, h * 0.14f), cornerRadius = CornerRadius(w * 0.03f))
+
+        // Overgrown moss & vines
+        val moss = Path().apply {
+            moveTo(w * 0.14f, h * 0.22f)
+            quadraticTo(w * 0.30f, h * 0.40f, w * 0.22f, h * 0.55f)
+            quadraticTo(w * 0.28f, h * 0.70f, w * 0.24f, h * 0.84f)
+        }
+        drawPath(moss, color = Color(0xFF388E3C), style = Stroke(width = w * 0.04f))
+    }
+}
+
+@Composable
+fun ScenicWoodenBridgeOverStream(modifier: Modifier = Modifier.size(86.dp)) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+
+        // Stream of Water under bridge
+        val water = Path().apply {
+            moveTo(0f, h * 0.35f)
+            quadraticTo(w * 0.5f, h * 0.45f, w, h * 0.35f)
+            lineTo(w, h * 0.65f)
+            quadraticTo(w * 0.5f, h * 0.75f, 0f, h * 0.65f)
+            close()
+        }
+        drawPath(water, color = Color(0xFF0288D1))
+        drawPath(water, color = Color(0xFF29B6F6), style = Stroke(width = w * 0.02f))
+
+        // Bridge Planks
+        val wood = Color(0xFF6D4C41)
+        val woodDark = Color(0xFF4E342E)
+        for (i in 0 until 5) {
+            val px = w * (0.15f + i * 0.15f)
+            drawRoundRect(color = wood, topLeft = Offset(px, h * 0.25f), size = Size(w * 0.12f, h * 0.50f), cornerRadius = CornerRadius(w * 0.02f))
+            drawRect(color = woodDark, topLeft = Offset(px + w * 0.08f, h * 0.25f), size = Size(w * 0.04f, h * 0.50f))
+        }
+
+        // Bridge Handrails
+        drawLine(color = Color(0xFF8D6E63), start = Offset(w * 0.10f, h * 0.25f), end = Offset(w * 0.90f, h * 0.25f), strokeWidth = w * 0.04f)
+        drawLine(color = Color(0xFF8D6E63), start = Offset(w * 0.10f, h * 0.75f), end = Offset(w * 0.90f, h * 0.75f), strokeWidth = w * 0.04f)
+    }
+}
+
+@Composable
+fun ScenicWaterfallCliff(modifier: Modifier = Modifier.size(88.dp)) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+
+        // Dark Cliff Rock Face
+        val cliff = Path().apply {
+            moveTo(w * 0.1f, h * 0.1f)
+            lineTo(w * 0.9f, h * 0.1f)
+            lineTo(w * 0.85f, h * 0.85f)
+            lineTo(w * 0.15f, h * 0.85f)
+            close()
+        }
+        drawPath(cliff, color = Color(0xFF455A64))
+
+        // Cascading Waterfall
+        val fall = Path().apply {
+            moveTo(w * 0.38f, h * 0.10f)
+            lineTo(w * 0.62f, h * 0.10f)
+            lineTo(w * 0.66f, h * 0.85f)
+            lineTo(w * 0.34f, h * 0.85f)
+            close()
+        }
+        drawPath(fall, color = Color(0xFF00E5FF))
+        drawPath(fall, color = Color.White, style = Stroke(width = w * 0.03f))
+
+        // Foam mist spray at base
+        drawCircle(color = Color(0xCCFFFFFF), radius = w * 0.10f, center = Offset(w * 0.38f, h * 0.82f))
+        drawCircle(color = Color(0xCCFFFFFF), radius = w * 0.12f, center = Offset(w * 0.50f, h * 0.85f))
+        drawCircle(color = Color(0xCCFFFFFF), radius = w * 0.10f, center = Offset(w * 0.62f, h * 0.82f))
+    }
+}
+
+@Composable
+fun ScenicGlowingCrystalMushrooms(modifier: Modifier = Modifier.size(54.dp)) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+
+        // Magical Glow Aura
+        drawCircle(color = Color(0x4400E5FF), radius = w * 0.45f, center = Offset(w * 0.5f, h * 0.45f))
+
+        // Glowing Crystal Shards / Mushrooms
+        val c1 = Path().apply {
+            moveTo(w * 0.35f, h * 0.78f)
+            lineTo(w * 0.25f, h * 0.35f)
+            lineTo(w * 0.35f, h * 0.15f)
+            lineTo(w * 0.45f, h * 0.35f)
+            close()
+        }
+        drawPath(c1, color = Color(0xFF00E5FF))
+        drawPath(c1, color = Color.White, style = Stroke(width = w * 0.02f))
+
+        val c2 = Path().apply {
+            moveTo(w * 0.62f, h * 0.78f)
+            lineTo(w * 0.52f, h * 0.45f)
+            lineTo(w * 0.62f, h * 0.25f)
+            lineTo(w * 0.72f, h * 0.45f)
+            close()
+        }
+        drawPath(c2, color = Color(0xFFD500F9))
+        drawPath(c2, color = Color.White, style = Stroke(width = w * 0.02f))
+    }
+}
+
+@Composable
+fun ScenicDragonStoneStatue(modifier: Modifier = Modifier.size(76.dp)) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+
+        // Pedestal
+        drawRoundRect(color = Color(0xFF37474F), topLeft = Offset(w * 0.2f, h * 0.70f), size = Size(w * 0.6f, h * 0.20f), cornerRadius = CornerRadius(w * 0.03f))
+
+        // Dragon / Gargoyle Silhouette Statue
+        val body = Path().apply {
+            moveTo(w * 0.35f, h * 0.70f)
+            quadraticTo(w * 0.25f, h * 0.45f, w * 0.40f, h * 0.30f)
+            lineTo(w * 0.30f, h * 0.25f)
+            lineTo(w * 0.50f, h * 0.15f) // Snout
+            lineTo(w * 0.55f, h * 0.30f)
+            quadraticTo(w * 0.75f, h * 0.45f, w * 0.65f, h * 0.70f)
+            close()
+        }
+        drawPath(body, color = Color(0xFF263238))
+        drawPath(body, color = Color(0xFF546E7A), style = Stroke(width = w * 0.025f))
+
+        // Glowing Golden Rune on chest
+        drawCircle(color = Color(0xFFFFD54F), radius = w * 0.05f, center = Offset(w * 0.48f, h * 0.45f))
+    }
+}
+

@@ -111,13 +111,25 @@ fun AdventureLevelNode(
                 size = Size(w * 0.84f, h * 0.55f)
             )
 
-            // Colors based on state
+            // Colors based on state & Biome World (Easy, Moderate, Hard)
             val (baseDark, topGradient, borderColor) = when (state) {
-                LevelNodeState.COMPLETED -> Triple(
-                    Color(0xFF488424),
-                    Brush.verticalGradient(listOf(Color(0xFF86CC4C), Color(0xFF6BBB36))),
-                    Color(0xFFA2E06A)
-                )
+                LevelNodeState.COMPLETED -> when {
+                    level <= 35 -> Triple( // EASY: Bright soft green
+                        Color(0xFF488424),
+                        Brush.verticalGradient(listOf(Color(0xFF86CC4C), Color(0xFF6BBB36))),
+                        Color(0xFFA2E06A)
+                    )
+                    level <= 70 -> Triple( // MODERATE: Richer forest green
+                        Color(0xFF2E6316),
+                        Brush.verticalGradient(listOf(Color(0xFF58A336), Color(0xFF438A2A))),
+                        Color(0xFF81C784)
+                    )
+                    else -> Triple(       // HARD: Deep emerald slate
+                        Color(0xFF1B4510),
+                        Brush.verticalGradient(listOf(Color(0xFF2E7D32), Color(0xFF1B5E20))),
+                        Color(0xFF66BB6A)
+                    )
+                }
                 LevelNodeState.CURRENT -> Triple(
                     Color(0xFF38701F),
                     Brush.verticalGradient(listOf(Color(0xFF95DB56), Color(0xFF74C23B))),
