@@ -72,6 +72,10 @@ class EndgameAndSurvivalTest {
             val puzzles = PuzzleRepository.getPuzzlesByCategory(cat)
             assertEquals("Category $cat must have 100 puzzles", 100, puzzles.size)
             assertTrue("Category $cat must have diverse authentic FENs", puzzles.map { it.fen }.distinct().isNotEmpty())
+            if (cat == "Skewer") {
+                val distinctFens = puzzles.map { it.fen }.distinct()
+                assertEquals("Skewer must have 100 unique non-repeating positions", 100, distinctFens.size)
+            }
 
             // Test all puzzles for each category to ensure move legality
             for (puzzle in puzzles) {
@@ -220,5 +224,33 @@ class EndgameAndSurvivalTest {
                 assertTrue("Checkmate survival should have mate themed puzzles", hasMateThemes)
             }
         }
+    }
+
+    @Test
+    fun testDedicatedDatabasesExistAndHave100PuzzlesEach() {
+        assertEquals(100, com.chessmaster.play.data.SkewerDatabase.getPuzzles().size)
+        assertEquals(100, com.chessmaster.play.data.ForkDatabase.getPuzzles().size)
+        assertEquals(100, com.chessmaster.play.data.PinDatabase.getPuzzles().size)
+        assertEquals(100, com.chessmaster.play.data.MateIn1Database.getPuzzles().size)
+        assertEquals(100, com.chessmaster.play.data.MateIn2Database.getPuzzles().size)
+        assertEquals(100, com.chessmaster.play.data.DoubleAttackDatabase.getPuzzles().size)
+        assertEquals(100, com.chessmaster.play.data.DiscoveredAttackDatabase.getPuzzles().size)
+        assertEquals(100, com.chessmaster.play.data.SmotheredMateDatabase.getPuzzles().size)
+        assertEquals(100, com.chessmaster.play.data.SacrificeDatabase.getPuzzles().size)
+        assertEquals(100, com.chessmaster.play.data.AttractionDatabase.getPuzzles().size)
+        assertEquals(100, com.chessmaster.play.data.DeflectionDatabase.getPuzzles().size)
+        assertEquals(100, com.chessmaster.play.data.ClearanceDatabase.getPuzzles().size)
+        assertEquals(100, com.chessmaster.play.data.WinningMaterialDatabase.getPuzzles().size)
+
+        assertEquals(100, com.chessmaster.play.data.KingVsKingDatabase.getLessons().size)
+        assertEquals(100, com.chessmaster.play.data.KingAndPawnDatabase.getLessons().size)
+        assertEquals(100, com.chessmaster.play.data.RookEndgameDatabase.getLessons().size)
+        assertEquals(100, com.chessmaster.play.data.LucenaDatabase.getLessons().size)
+        assertEquals(100, com.chessmaster.play.data.PhilidorDatabase.getLessons().size)
+        assertEquals(100, com.chessmaster.play.data.QueenEndgameDatabase.getLessons().size)
+        assertEquals(100, com.chessmaster.play.data.BishopEndgameDatabase.getLessons().size)
+        assertEquals(100, com.chessmaster.play.data.KnightEndgameDatabase.getLessons().size)
+        assertEquals(100, com.chessmaster.play.data.PassedPawnsDatabase.getLessons().size)
+        assertEquals(100, com.chessmaster.play.data.EndgameStrategyDatabase.getLessons().size)
     }
 }

@@ -30,15 +30,11 @@ import com.chessmaster.play.ui.components.adventure.AdventureLevelMap
 @Composable
 fun TacticalThemesScreen(onBack: () -> Unit, onPlayPuzzle: () -> Unit) {
     val context = LocalContext.current
-    var selectedCategory by remember { mutableStateOf<String?>(null) }
-    var highestUnlockedLevel by remember { mutableIntStateOf(1) }
+    var selectedCategory by remember { mutableStateOf<String?>(PuzzleRepository.currentTacticalCategory) }
+    val highestUnlockedLevel = if (selectedCategory != null) {
+        com.chessmaster.play.data.LocalLeaderboardManager.getHighestUnlockedThemeLevel(context, selectedCategory!!)
+    } else 1
     var isGridView by remember { mutableStateOf(false) }
-
-    LaunchedEffect(selectedCategory) {
-        if (selectedCategory != null) {
-            highestUnlockedLevel = com.chessmaster.play.data.LocalLeaderboardManager.getHighestUnlockedThemeLevel(context, selectedCategory!!)
-        }
-    }
     
     val darkBg = MaterialTheme.colorScheme.background
     val cardBg = MaterialTheme.colorScheme.surfaceVariant
@@ -62,6 +58,7 @@ fun TacticalThemesScreen(onBack: () -> Unit, onPlayPuzzle: () -> Unit) {
                 IconButton(onClick = {
                     if (selectedCategory != null) {
                         selectedCategory = null
+                        PuzzleRepository.currentTacticalCategory = null
                     } else {
                         onBack()
                     }
@@ -134,7 +131,10 @@ fun TacticalThemesScreen(onBack: () -> Unit, onPlayPuzzle: () -> Unit) {
                             textSecondary = textSecondary,
                             accentColor = accentColor,
                             isLocked = false,
-                            onClick = { selectedCategory = category }
+                            onClick = { 
+                                selectedCategory = category
+                                PuzzleRepository.currentTacticalCategory = category
+                            }
                         )
                     }
                 }
@@ -158,6 +158,7 @@ fun TacticalThemesScreen(onBack: () -> Unit, onPlayPuzzle: () -> Unit) {
                             onSelectLevel = { level ->
                                 val targetPuzzle = puzzles.getOrNull(level - 1)
                                 if (targetPuzzle != null) {
+                                    PuzzleRepository.currentTacticalCategory = selectedCategory
                                     PuzzleRepository.activePlayPuzzle = targetPuzzle
                                     onPlayPuzzle()
                                 }
@@ -165,6 +166,7 @@ fun TacticalThemesScreen(onBack: () -> Unit, onPlayPuzzle: () -> Unit) {
                             onPlayCurrentLevel = {
                                 val currentPuzzle = puzzles.getOrNull(highestUnlockedLevel - 1) ?: puzzles.firstOrNull()
                                 if (currentPuzzle != null) {
+                                    PuzzleRepository.currentTacticalCategory = selectedCategory
                                     PuzzleRepository.activePlayPuzzle = currentPuzzle
                                     onPlayPuzzle()
                                 }
@@ -226,6 +228,7 @@ fun TacticalThemesScreen(onBack: () -> Unit, onPlayPuzzle: () -> Unit) {
                                             )
                                             .clickable {
                                                 if (level <= highestUnlockedLevel) {
+                                                    PuzzleRepository.currentTacticalCategory = selectedCategory
                                                     PuzzleRepository.activePlayPuzzle = puzzle
                                                     onPlayPuzzle()
                                                 }
@@ -283,6 +286,7 @@ fun TacticalThemesScreen(onBack: () -> Unit, onPlayPuzzle: () -> Unit) {
                                             )
                                             .clickable {
                                                 if (level <= highestUnlockedLevel) {
+                                                    PuzzleRepository.currentTacticalCategory = selectedCategory
                                                     PuzzleRepository.activePlayPuzzle = puzzle
                                                     onPlayPuzzle()
                                                 }
@@ -340,6 +344,7 @@ fun TacticalThemesScreen(onBack: () -> Unit, onPlayPuzzle: () -> Unit) {
                                             )
                                             .clickable {
                                                 if (level <= highestUnlockedLevel) {
+                                                    PuzzleRepository.currentTacticalCategory = selectedCategory
                                                     PuzzleRepository.activePlayPuzzle = puzzle
                                                     onPlayPuzzle()
                                                 }

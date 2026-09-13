@@ -43,12 +43,12 @@ import kotlin.math.sin
 /**
  * Adventure Journey Map representing 100 levels along a scenic serpentine S-curve.
  * Features:
- * - Isometric checkered lawn background
+ * - True isometric diamond checkered lawn background
  * - Stepping stone trail connecting levels
- * - Scenic illustrative landmarks (ponds, cozy cabins, benches, apple trees, milestone chests)
- * - 3D hedge stepping stones with checkmarks & white pawn pin on the current level
- * - Floating bottom action dock with score, progress bar, "Solve Puzzles" CTA button,
- *   view switcher (Map <-> Grid), and quick jump-to-level button.
+ * - 3D isometric landmarks: Cozy Log Cabin (with cat & chicken), Park Bench (with chessboard & propeller pawn),
+ *   Pond (with lily pads & frog on rock), Apple & Cypress Trees, White Castle Watchtower,
+ *   Mountain Goat on granite cliff, and Ancient Altar with chess pieces.
+ * - 3D hedge stepping stones with checkmarks & white pawn pin on current level.
  */
 
 @Composable
@@ -87,14 +87,14 @@ fun AdventureLevelMap(
         scrollState.scrollTo(targetPx)
     }
 
-    Box(modifier = modifier.fillMaxSize().background(Color(0xFF677C6A))) {
+    Box(modifier = modifier.fillMaxSize().background(Color(0xFF204526))) {
         // Scrollable Adventure Map Container
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(scrollState)
         ) {
-            // Background Canvas: Meadow checkered tiles + trail stones
+            // Background Canvas: Isometric diamond checkered meadow + trail stones
             Canvas(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -131,7 +131,8 @@ fun AdventureLevelMap(
                     }
 
                     val levelT = (level - 1).toDouble()
-                    val sinVal = sin((2.0 * PI * levelT) / period)
+                    // Negative sine to curve left towards Level 2, 3, 4, matching Screenshot 2
+                    val sinVal = -sin((2.0 * PI * levelT) / period)
                     val nodeXPx = (screenWidthPx / 2f) + (amplitudePx * sinVal.toFloat())
                     val nodeYDp = totalMapHeightDp - bottomDockSpaceDp - (stepHeightDp * (level - 1))
 
@@ -167,7 +168,7 @@ fun AdventureLevelMap(
 
 /**
  * Places scenic landmarks, trees, pine trees, bushes, flowers, mushrooms, ponds, cabins, benches,
- * goats, castles, monuments, and flags according to EASY, MODERATE, and HARD world biomes.
+ * goats, castles, monuments, and flags faithfully matching the reference screenshots.
  */
 @Composable
 private fun LandmarkForLevel(
@@ -176,143 +177,137 @@ private fun LandmarkForLevel(
     nodeYDp: Dp,
     screenWidthDp: Dp
 ) {
-    val isLeftOfCenter = nodeXDp < (screenWidthDp / 2)
-    val leftX = (nodeXDp - 75.dp).coerceAtLeast(10.dp)
-    val rightX = (nodeXDp + 65.dp).coerceAtMost(screenWidthDp - 75.dp)
-    val decorX = if (isLeftOfCenter) rightX else leftX
-    val oppX = if (isLeftOfCenter) leftX else rightX
+    val leftX = 12.dp
+    val leftAccentX = 22.dp
+    val rightX = (screenWidthDp - 138.dp).coerceAtLeast(180.dp)
+    val rightAccentX = (screenWidthDp - 65.dp).coerceAtLeast(260.dp)
 
     when {
         // === EASY WORLD (Levels 1 - 35): Peaceful Friendly Forest ===
         level <= 35 -> {
             when (level) {
-                5 -> ScenicDaisyFlowers(modifier = Modifier.offset(x = decorX, y = nodeYDp - 10.dp))
-                10 -> ScenicMilestoneChest(modifier = Modifier.offset(x = oppX, y = nodeYDp - 22.dp))
-                15 -> ScenicPondWithFrog(modifier = Modifier.offset(x = decorX, y = nodeYDp - 30.dp))
-                21 -> ScenicWoodenBench(modifier = Modifier.offset(x = oppX, y = nodeYDp - 20.dp))
-                28 -> ScenicCozyCabin(modifier = Modifier.offset(x = decorX, y = nodeYDp - 35.dp))
-            }
-            when (level % 4) {
-                1 -> {
-                    ScenicAppleTree(modifier = Modifier.offset(x = decorX, y = nodeYDp - 25.dp))
-                    ScenicBushCluster(modifier = Modifier.offset(x = oppX, y = nodeYDp + 10.dp))
-                }
-                2 -> {
-                    ScenicDaisyFlowers(modifier = Modifier.offset(x = oppX, y = nodeYDp - 15.dp))
-                    ScenicMushroomCluster(modifier = Modifier.offset(x = decorX, y = nodeYDp + 5.dp))
-                }
-                3 -> {
-                    ScenicAppleTree(modifier = Modifier.offset(x = oppX, y = nodeYDp - 25.dp))
-                }
-                0 -> {
-                    ScenicBushCluster(modifier = Modifier.offset(x = decorX, y = nodeYDp - 10.dp))
-                    ScenicDaisyFlowers(modifier = Modifier.offset(x = oppX, y = nodeYDp + 5.dp))
-                }
+                // Major Landmarks (faithfully placed as seen in Screenshot 2):
+                3 -> ScenicCozyCabin(modifier = Modifier.offset(x = rightX, y = nodeYDp - 40.dp).size(width = 130.dp, height = 125.dp))
+                6 -> ScenicWoodenBench(modifier = Modifier.offset(x = leftX, y = nodeYDp - 35.dp).size(width = 125.dp, height = 115.dp))
+                10 -> ScenicPondWithFrog(modifier = Modifier.offset(x = rightX + 8.dp, y = nodeYDp - 28.dp).size(width = 115.dp, height = 95.dp))
+                14 -> ScenicAppleTreeWithCypress(modifier = Modifier.offset(x = leftX, y = nodeYDp - 40.dp).size(width = 115.dp, height = 120.dp))
+
+                // Repeating scenery along the forest journey
+                19 -> ScenicCozyCabin(modifier = Modifier.offset(x = rightX, y = nodeYDp - 40.dp).size(width = 130.dp, height = 125.dp))
+                23 -> ScenicWoodenBench(modifier = Modifier.offset(x = leftX, y = nodeYDp - 35.dp).size(width = 125.dp, height = 115.dp))
+                27 -> ScenicPondWithFrog(modifier = Modifier.offset(x = rightX + 8.dp, y = nodeYDp - 28.dp).size(width = 115.dp, height = 95.dp))
+                31 -> ScenicAppleTreeWithCypress(modifier = Modifier.offset(x = leftX, y = nodeYDp - 40.dp).size(width = 115.dp, height = 120.dp))
+                35 -> ScenicMilestoneChest(modifier = Modifier.offset(x = rightAccentX - 10.dp, y = nodeYDp - 25.dp).size(68.dp))
+
+                // Nature accents along the trail
+                1 -> ScenicDaisyFlowers(modifier = Modifier.offset(x = leftAccentX + 10.dp, y = nodeYDp - 10.dp).size(36.dp))
+                5 -> ScenicBushCluster(modifier = Modifier.offset(x = rightAccentX, y = nodeYDp - 10.dp).size(52.dp))
+                8 -> ScenicDaisyFlowers(modifier = Modifier.offset(x = leftAccentX, y = nodeYDp - 15.dp).size(36.dp))
+                12 -> ScenicMushroomCluster(modifier = Modifier.offset(x = rightAccentX, y = nodeYDp + 5.dp).size(44.dp))
+                16 -> ScenicDaisyFlowers(modifier = Modifier.offset(x = rightAccentX, y = nodeYDp - 10.dp).size(36.dp))
+                21 -> ScenicBushCluster(modifier = Modifier.offset(x = rightAccentX, y = nodeYDp - 10.dp).size(52.dp))
+                25 -> ScenicMushroomCluster(modifier = Modifier.offset(x = leftAccentX, y = nodeYDp + 5.dp).size(44.dp))
+                29 -> ScenicDaisyFlowers(modifier = Modifier.offset(x = rightAccentX, y = nodeYDp - 10.dp).size(36.dp))
+                33 -> ScenicBushCluster(modifier = Modifier.offset(x = leftAccentX, y = nodeYDp - 10.dp).size(52.dp))
             }
         }
 
-        // === MODERATE WORLD (Levels 36 - 70): Adventurous Foothills & Pine Ruins ===
+        // === MODERATE WORLD (Levels 36 - 70): Adventurous Foothills & Castle Ruins ===
         level in 36..70 -> {
             when (level) {
-                38 -> ScenicWhiteCastleTower(modifier = Modifier.offset(x = decorX, y = nodeYDp - 35.dp))
-                45 -> ScenicWoodenBridgeOverStream(modifier = Modifier.offset(x = oppX, y = nodeYDp - 25.dp))
-                52 -> ScenicAncientRuins(modifier = Modifier.offset(x = decorX, y = nodeYDp - 30.dp))
-                60 -> ScenicWaterfallCliff(modifier = Modifier.offset(x = oppX, y = nodeYDp - 35.dp))
-                65 -> ScenicMilestoneChest(modifier = Modifier.offset(x = decorX, y = nodeYDp - 22.dp))
-            }
-            when (level % 4) {
-                1 -> {
-                    ScenicPineTree(modifier = Modifier.offset(x = decorX, y = nodeYDp - 20.dp))
-                    ScenicStoneMonumentWithFlag(modifier = Modifier.offset(x = oppX, y = nodeYDp + 10.dp))
-                }
-                2 -> {
-                    ScenicStoneMonumentWithFlag(modifier = Modifier.offset(x = oppX, y = nodeYDp - 25.dp))
-                    ScenicPineTree(modifier = Modifier.offset(x = decorX, y = nodeYDp + 5.dp))
-                }
-                3 -> {
-                    ScenicPineTree(modifier = Modifier.offset(x = oppX, y = nodeYDp - 20.dp))
-                }
-                0 -> {
-                    ScenicStoneMonumentWithFlag(modifier = Modifier.offset(x = decorX, y = nodeYDp - 25.dp))
-                    ScenicPineTree(modifier = Modifier.offset(x = oppX, y = nodeYDp + 5.dp))
-                }
+                // Major Landmarks (faithfully placed as seen in Screenshot 1):
+                38 -> ScenicWhiteCastleTower(modifier = Modifier.offset(x = rightX + 10.dp, y = nodeYDp - 45.dp).size(width = 110.dp, height = 125.dp))
+                42 -> ScenicRockyMountainWithGoat(modifier = Modifier.offset(x = leftX, y = nodeYDp - 45.dp).size(width = 115.dp, height = 130.dp))
+                47 -> ScenicAncientAltarWithPieces(modifier = Modifier.offset(x = rightX + 5.dp, y = nodeYDp - 38.dp).size(width = 110.dp, height = 110.dp))
+                51 -> ScenicWaterfallCliff(modifier = Modifier.offset(x = leftX, y = nodeYDp - 40.dp).size(88.dp))
+                55 -> ScenicWhiteCastleTower(modifier = Modifier.offset(x = rightX + 10.dp, y = nodeYDp - 45.dp).size(width = 110.dp, height = 125.dp))
+                59 -> ScenicRockyMountainWithGoat(modifier = Modifier.offset(x = leftX, y = nodeYDp - 45.dp).size(width = 115.dp, height = 130.dp))
+                63 -> ScenicMilestoneChest(modifier = Modifier.offset(x = rightAccentX - 10.dp, y = nodeYDp - 25.dp).size(68.dp))
+                67 -> ScenicAncientRuins(modifier = Modifier.offset(x = leftX + 8.dp, y = nodeYDp - 30.dp).size(80.dp))
+                70 -> ScenicWoodenBridgeOverStream(modifier = Modifier.offset(x = rightX + 8.dp, y = nodeYDp - 25.dp).size(86.dp))
+
+                // Foothill nature & monuments
+                36 -> ScenicPineTree(modifier = Modifier.offset(x = leftAccentX, y = nodeYDp - 20.dp).size(64.dp))
+                40 -> ScenicStoneMonumentWithFlag(modifier = Modifier.offset(x = leftAccentX, y = nodeYDp - 25.dp).size(70.dp))
+                44 -> ScenicPineTree(modifier = Modifier.offset(x = rightAccentX, y = nodeYDp - 20.dp).size(64.dp))
+                49 -> ScenicStoneMonumentWithFlag(modifier = Modifier.offset(x = leftAccentX, y = nodeYDp - 25.dp).size(70.dp))
+                53 -> ScenicPineTree(modifier = Modifier.offset(x = rightAccentX, y = nodeYDp - 20.dp).size(64.dp))
+                57 -> ScenicStoneMonumentWithFlag(modifier = Modifier.offset(x = leftAccentX, y = nodeYDp - 25.dp).size(70.dp))
+                61 -> ScenicPineTree(modifier = Modifier.offset(x = rightAccentX, y = nodeYDp - 20.dp).size(64.dp))
+                65 -> ScenicStoneMonumentWithFlag(modifier = Modifier.offset(x = leftAccentX, y = nodeYDp - 25.dp).size(70.dp))
+                69 -> ScenicPineTree(modifier = Modifier.offset(x = rightAccentX, y = nodeYDp - 20.dp).size(64.dp))
             }
         }
 
         // === HARD WORLD (Levels 71 - 100): Dramatic Mountain Summit & Dragon Monuments ===
         else -> {
             when (level) {
-                75 -> ScenicMilestoneChest(modifier = Modifier.offset(x = oppX, y = nodeYDp - 22.dp))
-                80 -> ScenicRockyMountainWithGoat(modifier = Modifier.offset(x = decorX, y = nodeYDp - 40.dp))
-                88 -> ScenicDragonStoneStatue(modifier = Modifier.offset(x = oppX, y = nodeYDp - 30.dp))
-                95 -> ScenicRockyMountainWithGoat(modifier = Modifier.offset(x = decorX, y = nodeYDp - 40.dp))
-                100 -> ScenicMilestoneChest(modifier = Modifier.offset(x = oppX, y = nodeYDp - 22.dp))
-            }
-            when (level % 4) {
-                1 -> {
-                    ScenicGlowingCrystalMushrooms(modifier = Modifier.offset(x = decorX, y = nodeYDp - 15.dp))
-                    ScenicDragonStoneStatue(modifier = Modifier.offset(x = oppX, y = nodeYDp + 10.dp))
-                }
-                2 -> {
-                    ScenicPineTree(modifier = Modifier.offset(x = oppX, y = nodeYDp - 20.dp))
-                    ScenicGlowingCrystalMushrooms(modifier = Modifier.offset(x = decorX, y = nodeYDp + 5.dp))
-                }
-                3 -> {
-                    ScenicDragonStoneStatue(modifier = Modifier.offset(x = oppX, y = nodeYDp - 25.dp))
-                }
-                0 -> {
-                    ScenicGlowingCrystalMushrooms(modifier = Modifier.offset(x = decorX, y = nodeYDp - 15.dp))
-                    ScenicPineTree(modifier = Modifier.offset(x = oppX, y = nodeYDp + 5.dp))
-                }
+                // Major Summit Landmarks
+                74 -> ScenicAncientAltarWithPieces(modifier = Modifier.offset(x = rightX + 5.dp, y = nodeYDp - 38.dp).size(width = 110.dp, height = 110.dp))
+                78 -> ScenicRockyMountainWithGoat(modifier = Modifier.offset(x = leftX, y = nodeYDp - 45.dp).size(width = 115.dp, height = 130.dp))
+                83 -> ScenicWhiteCastleTower(modifier = Modifier.offset(x = rightX + 10.dp, y = nodeYDp - 45.dp).size(width = 110.dp, height = 125.dp))
+                87 -> ScenicDragonStoneStatue(modifier = Modifier.offset(x = leftX + 8.dp, y = nodeYDp - 25.dp).size(76.dp))
+                91 -> ScenicRockyMountainWithGoat(modifier = Modifier.offset(x = rightX, y = nodeYDp - 45.dp).size(width = 115.dp, height = 130.dp))
+                95 -> ScenicGlowingCrystalMushrooms(modifier = Modifier.offset(x = leftAccentX, y = nodeYDp - 20.dp).size(54.dp))
+                98 -> ScenicMilestoneChest(modifier = Modifier.offset(x = rightAccentX - 10.dp, y = nodeYDp - 25.dp).size(68.dp))
+
+                // Crystal & mountain accents
+                72 -> ScenicGlowingCrystalMushrooms(modifier = Modifier.offset(x = leftAccentX, y = nodeYDp - 15.dp).size(54.dp))
+                76 -> ScenicPineTree(modifier = Modifier.offset(x = rightAccentX, y = nodeYDp - 20.dp).size(64.dp))
+                81 -> ScenicGlowingCrystalMushrooms(modifier = Modifier.offset(x = leftAccentX, y = nodeYDp - 15.dp).size(54.dp))
+                85 -> ScenicPineTree(modifier = Modifier.offset(x = rightAccentX, y = nodeYDp - 20.dp).size(64.dp))
+                89 -> ScenicDragonStoneStatue(modifier = Modifier.offset(x = leftX + 8.dp, y = nodeYDp - 25.dp).size(76.dp))
+                93 -> ScenicPineTree(modifier = Modifier.offset(x = rightAccentX, y = nodeYDp - 20.dp).size(64.dp))
             }
         }
     }
 }
 
 /**
- * Draws the checkered forest meadow canvas background with dynamic biome transitions:
- * - EASY WORLD (Levels 1-35): Bright soft sage grass
- * - MODERATE WORLD (Levels 36-70): Deep pine forest green
- * - HARD WORLD (Levels 71-100): Dark mountain slate green
+ * Draws the checkered meadow / stone canvas background with dynamic biome transitions
+ * using true isometric diamond tiles tilted at 45 degrees:
+ * - EASY WORLD (Levels 1-35): Deep rich forest lawn green diamonds (matching Screenshot 2)
+ * - MODERATE WORLD (Levels 36-70): Transition forest green to slate
+ * - HARD WORLD (Levels 71-100): Light grey granite mountain checker diamonds (matching Screenshot 1)
  */
 private fun DrawScope.drawMeadowCheckeredBackground(width: Float, height: Float) {
-    val tileSize = 70f
-    val grassDot = Color(0x33FFFFFF)
+    val tileW = 160f
+    val tileH = 92f // True isometric ratio
 
-    val rows = (height / tileSize).toInt() + 1
-    val cols = (width / tileSize).toInt() + 1
+    val rows = ((height + tileH) / (tileH / 2f)).toInt() + 2
+    val cols = ((width + tileW) / (tileW / 2f)).toInt() + 2
 
-    for (r in 0 until rows) {
-        val yFrac = 1.0f - (r.toFloat() / rows.toFloat()) // 0.0 at bottom (Level 1), 1.0 at top (Level 100)
+    val path = Path()
+
+    for (r in -1..rows) {
+        val yFrac = 1.0f - (r.toFloat() / rows.toFloat()).coerceIn(0f, 1f)
+        val cy = r * (tileH / 2f)
 
         val (color1, color2) = when {
-            yFrac < 0.35f -> Color(0xFF6B806E) to Color(0xFF7A9380) // EASY WORLD: Bright soft green
-            yFrac < 0.70f -> Color(0xFF4A5F4E) to Color(0xFF58705C) // MODERATE WORLD: Deep pine forest green
-            else -> Color(0xFF2C3B32) to Color(0xFF37493E)          // HARD WORLD: Dark mountain slate green
+            yFrac < 0.35f -> Color(0xFF2A572F) to Color(0xFF366B3D) // Lush dark green diamonds
+            yFrac < 0.68f -> Color(0xFF435C4A) to Color(0xFF54705C) // Transition slate green
+            else -> Color(0xFF8D9992) to Color(0xFFA4B0A9)          // Mountain light grey granite diamonds
         }
 
-        for (c in 0 until cols) {
-            val isEven = (r + c) % 2 == 0
-            val x = c * tileSize
-            val y = r * tileSize
-            drawRect(
-                color = if (isEven) color1 else color2,
-                topLeft = Offset(x, y),
-                size = Size(tileSize, tileSize)
-            )
+        val isRowEven = ((r % 2) + 2) % 2 == 0
+        val rowColor = if (isRowEven) color1 else color2
 
-            // Occasional grass blade dots
-            if ((r * 7 + c * 13) % 5 == 0) {
-                drawCircle(
-                    color = grassDot,
-                    radius = 2.5f,
-                    center = Offset(x + tileSize * 0.4f, y + tileSize * 0.5f)
-                )
-                drawCircle(
-                    color = grassDot,
-                    radius = 2.5f,
-                    center = Offset(x + tileSize * 0.6f, y + tileSize * 0.45f)
-                )
+        val startCol = if (Math.abs(r) % 2 == 1) -1 else -2
+        for (c in startCol..cols step 2) {
+            val cx = c * (tileW / 2f)
+
+            path.reset()
+            path.moveTo(cx, cy - tileH / 2f)
+            path.lineTo(cx + tileW / 2f, cy)
+            path.lineTo(cx, cy + tileH / 2f)
+            path.lineTo(cx - tileW / 2f, cy)
+            path.close()
+
+            drawPath(path, color = rowColor)
+
+            // Occasional organic grass blade dots on lawn
+            if ((r * 11 + c * 7) % 17 == 0 && yFrac < 0.68f) {
+                drawCircle(color = Color(0x22FFFFFF), radius = 2.5f, center = Offset(cx, cy))
             }
         }
     }
@@ -336,10 +331,10 @@ private fun DrawScope.drawTrailConnectingStones(
         val t1 = (level - 1).toDouble()
         val t2 = level.toDouble()
 
-        val x1 = (screenWidth / 2f) + (amplitude * sin((2.0 * PI * t1) / period).toFloat())
+        val x1 = (screenWidth / 2f) - (amplitude * sin((2.0 * PI * t1) / period).toFloat())
         val y1 = totalHeight - bottomPadding - (stepHeight * (level - 1))
 
-        val x2 = (screenWidth / 2f) + (amplitude * sin((2.0 * PI * t2) / period).toFloat())
+        val x2 = (screenWidth / 2f) - (amplitude * sin((2.0 * PI * t2) / period).toFloat())
         val y2 = totalHeight - bottomPadding - (stepHeight * level)
 
         val isPathUnlocked = level < highestUnlockedLevel
@@ -422,12 +417,3 @@ private fun SummitPeakBanner(modifier: Modifier = Modifier) {
         }
     }
 }
-
-/**
- * Floating Bottom Action Dock matching the reference screenshot:
- * - Rating/XP score pill
- * - Progress bar
- * - View toggle (Map vs Grid)
- * - Big vibrant green "Solve Puzzles" button
- */
-

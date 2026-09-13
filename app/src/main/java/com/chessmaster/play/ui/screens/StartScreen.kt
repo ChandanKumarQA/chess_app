@@ -41,12 +41,17 @@ import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
 import com.chessmaster.play.R
 
+import androidx.compose.material.icons.filled.SmartToy
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+
 @Composable
 fun StartScreen(
     onPlayOffline: (TimeControl, PieceColor?) -> Unit,
     onPlayOnline: () -> Unit,
     onPlayComputer: (TimeControl, PieceColor?) -> Unit,
     onPlayFriends: () -> Unit,
+    onPlayWithBot: () -> Unit = {},
     onPuzzles: () -> Unit = {},
     onRankings: () -> Unit = {},
     onFriends: () -> Unit = {},
@@ -70,6 +75,7 @@ fun StartScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
@@ -107,25 +113,22 @@ fun StartScreen(
                 modifier = Modifier.padding(bottom = 32.dp)
             )
 
-
-
-            // Buttons Grid
             // Buttons Grid
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 MenuButton(
-                    text = "Pass & Play\n(Offline)",
-                    icon = Icons.Default.People,
-                    onClick = { showOfflineTimeDialog = true },
+                    text = "Play Against\nBot",
+                    icon = Icons.Default.SmartToy,
+                    onClick = onPlayWithBot,
                     modifier = Modifier.weight(1f),
                     buttonColor = buttonColor
                 )
                 MenuButton(
-                    text = "Play With\nFriends",
-                    icon = Icons.Default.Public,
-                    onClick = onPlayFriends,
+                    text = "Pass & Play\n(Offline)",
+                    icon = Icons.Default.People,
+                    onClick = { showOfflineTimeDialog = true },
                     modifier = Modifier.weight(1f),
                     buttonColor = buttonColor
                 )
@@ -138,9 +141,9 @@ fun StartScreen(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 MenuButton(
-                    text = "Play with\nComputer",
-                    icon = Icons.Default.Computer,
-                    onClick = { showComputerOptions = true },
+                    text = "Play With\nFriends",
+                    icon = Icons.Default.Public,
+                    onClick = onPlayFriends,
                     modifier = Modifier.weight(1f),
                     buttonColor = buttonColor
                 )

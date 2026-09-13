@@ -29,12 +29,16 @@ import com.chessmaster.play.ui.screens.OnlineFriendsScreen
 import com.chessmaster.play.ui.screens.SettingsScreen
 import com.chessmaster.play.ui.screens.AnalysisBoardScreen
 import com.chessmaster.play.ui.screens.ClockScreen
+import com.chessmaster.play.ui.screens.BotSelectionScreen
+import com.chessmaster.play.ui.screens.BotGameScreen
+import com.chessmaster.play.model.BotProfile
 import com.chessmaster.play.viewmodel.ChessViewModel
 
 enum class Screen {
     START, GAME, PUZZLES, RANKINGS, FRIENDS, SETTINGS, LEARN, PUZZLE_GAME,
     TACTICAL_THEMES, ENDGAME_TRAINING, OPENING_TRAPS, PUZZLE_RUSH, SURVIVAL_MODE,
-    LESSON_DETAIL, ANALYSIS_BOARD, CLOCK
+    LESSON_DETAIL, ANALYSIS_BOARD, CLOCK,
+    BOT_SELECTION, BOT_GAME
 }
 
 class MainActivity : ComponentActivity() {
@@ -54,14 +58,20 @@ class MainActivity : ComponentActivity() {
             ) {
                     var currentScreen by remember { mutableStateOf(Screen.START) }
                     var selectedLessonId by remember { mutableStateOf<String?>(null) }
+                    var puzzleSourceScreen by remember { mutableStateOf(Screen.PUZZLES) }
+                    var selectedBot by remember { mutableStateOf<BotProfile?>(null) }
+                    var isNewBotGame by remember { mutableStateOf(true) }
                     
                     androidx.activity.compose.BackHandler(enabled = currentScreen != Screen.START) {
                         currentScreen = when (currentScreen) {
-                            Screen.PUZZLE_GAME, Screen.TACTICAL_THEMES, 
+                            Screen.PUZZLE_GAME -> puzzleSourceScreen
+                            Screen.TACTICAL_THEMES, 
                             Screen.ENDGAME_TRAINING, Screen.OPENING_TRAPS, 
                             Screen.PUZZLE_RUSH, Screen.SURVIVAL_MODE -> Screen.PUZZLES
                             Screen.LESSON_DETAIL -> Screen.LEARN
                             Screen.ANALYSIS_BOARD, Screen.CLOCK -> Screen.SETTINGS
+                            Screen.BOT_SELECTION -> Screen.START
+                            Screen.BOT_GAME -> Screen.BOT_SELECTION
                             else -> Screen.START
                         }
                     }
@@ -98,11 +108,30 @@ class MainActivity : ComponentActivity() {
                                         viewModel.setGameMode(GameMode.PVCPU)
                                         currentScreen = Screen.GAME
                                     },
+                                    onPlayWithBot = { currentScreen = Screen.BOT_SELECTION },
                                     onPlayFriends = { currentScreen = Screen.FRIENDS },
                                     onPuzzles = { currentScreen = Screen.PUZZLES },
                                     onRankings = { currentScreen = Screen.RANKINGS },
                                     onFriends = { currentScreen = Screen.FRIENDS },
                                     onSettings = { currentScreen = Screen.SETTINGS }
+                                )
+                            }
+                            Screen.BOT_SELECTION -> {
+                                BotSelectionScreen(
+                                    onBack = { currentScreen = Screen.START },
+                                    onStartGame = { bot, isNewGame ->
+                                        selectedBot = bot
+                                        isNewBotGame = isNewGame
+                                        currentScreen = Screen.BOT_GAME
+                                    }
+                                )
+                            }
+                            Screen.BOT_GAME -> {
+                                val botToPlay = selectedBot ?: com.chessmaster.play.data.BotDatabase.bandBots.first()
+                                BotGameScreen(
+                                    bot = botToPlay,
+                                    isNewGame = isNewBotGame,
+                                    onBack = { currentScreen = Screen.BOT_SELECTION }
                                 )
                             }
                             Screen.GAME -> {
@@ -113,7 +142,10 @@ class MainActivity : ComponentActivity() {
                             }
                             Screen.PUZZLES -> PuzzlesScreen(
                                 onBack = { currentScreen = Screen.START },
-                                onPlayPuzzle = { currentScreen = Screen.PUZZLE_GAME },
+                                onPlayPuzzle = { 
+                                    puzzleSourceScreen = Screen.PUZZLES
+                                    currentScreen = Screen.PUZZLE_GAME 
+                                },
                                 onTacticalThemes = { currentScreen = Screen.TACTICAL_THEMES },
                                 onEndgameTraining = { currentScreen = Screen.ENDGAME_TRAINING },
                                 onOpeningTraps = { currentScreen = Screen.OPENING_TRAPS },
@@ -155,9 +187,21 @@ class MainActivity : ComponentActivity() {
                                     )
                                 }
                             }
-                            Screen.PUZZLE_GAME -> com.chessmaster.play.ui.screens.PuzzleGameScreen(onBack = { currentScreen = Screen.PUZZLES })
-                            Screen.TACTICAL_THEMES -> com.chessmaster.play.ui.screens.TacticalThemesScreen(onBack = { currentScreen = Screen.PUZZLES }, onPlayPuzzle = { currentScreen = Screen.PUZZLE_GAME })
-                            Screen.ENDGAME_TRAINING -> com.chessmaster.play.ui.screens.EndgameTrainingScreen(onBack = { currentScreen = Screen.PUZZLES }, onPlayPuzzle = { currentScreen = Screen.PUZZLE_GAME })
+                            Screen.PUZZLE_GAME -> com.chessmaster.play.ui.screens.PuzzleGameScreen(onBack = { currentScreen = puzzleSourceScreen })
+                            Screen.TACTICAL_THEMES -> com.chessmaster.play.ui.screens.TacticalThemesScreen(
+                                onBack = { currentScreen = Screen.PUZZLES }, 
+                                onPlayPuzzle = { 
+                                    puzzleSourceScreen = Screen.TACTICAL_THEMES
+                                    currentScreen = Screen.PUZZLE_GAME 
+                                }
+                            )
+                            Screen.ENDGAME_TRAINING -> com.chessmaster.play.ui.screens.EndgameTrainingScreen(
+                                onBack = { currentScreen = Screen.PUZZLES }, 
+                                onPlayPuzzle = { 
+                                    puzzleSourceScreen = Screen.ENDGAME_TRAINING
+                                    currentScreen = Screen.PUZZLE_GAME 
+                                }
+                            )
                             Screen.OPENING_TRAPS -> com.chessmaster.play.ui.screens.OpeningTrapsScreen(onBack = { currentScreen = Screen.PUZZLES })
                             Screen.PUZZLE_RUSH -> com.chessmaster.play.ui.screens.PuzzleRushScreen(onBack = { currentScreen = Screen.PUZZLES })
                             Screen.SURVIVAL_MODE -> com.chessmaster.play.ui.screens.SurvivalModeScreen(onBack = { currentScreen = Screen.PUZZLES })

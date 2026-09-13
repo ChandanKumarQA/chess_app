@@ -197,6 +197,19 @@ fun PuzzleGameScreen(onBack: () -> Unit) {
         }
     }
 
+    val handlePuzzleWon = {
+        dialogState = PuzzleDialogState.WON
+        if (isCustomPuzzle) {
+            val category = (PuzzleRepository.currentTacticalCategory ?: puzzle.theme.substringBefore(" -")).trim()
+            val allInCategory = PuzzleRepository.getPuzzlesByCategory(category)
+            val index = allInCategory.indexOfFirst { it.id == puzzle.id }
+            val currentLevelNum = if (index >= 0) index + 1 else 1
+            com.chessmaster.play.data.LocalLeaderboardManager.unlockNextThemeLevel(context, category, currentLevelNum)
+        } else {
+            com.chessmaster.play.data.LocalLeaderboardManager.unlockNextPuzzleLevel(context, level)
+        }
+    }
+
     if (boardState == null) return
 
     val totalXp = remember(level) {
@@ -240,8 +253,11 @@ fun PuzzleGameScreen(onBack: () -> Unit) {
         }
 
         Column(modifier = Modifier.fillMaxSize()) {
+            val categoryName = if (isCustomPuzzle) (PuzzleRepository.currentTacticalCategory ?: puzzle.theme.substringBefore(" -")).trim() else ""
             val displayLevel = if (isCustomPuzzle) {
-                PuzzleRepository.getPuzzlesByCategory(puzzle.theme).indexOf(puzzle) + 1
+                val categoryPuzzles = PuzzleRepository.getPuzzlesByCategory(categoryName)
+                val idx = categoryPuzzles.indexOfFirst { it.id == puzzle.id }
+                if (idx >= 0) idx + 1 else 1
             } else {
                 level
             }
@@ -249,7 +265,7 @@ fun PuzzleGameScreen(onBack: () -> Unit) {
             // Top Bar matching reference screenshot
             PuzzleTopBar(
                 level = displayLevel,
-                title = if (isCustomPuzzle) puzzle.theme else "Puzzles",
+                title = if (isCustomPuzzle) categoryName else "Puzzles",
                 onBack = handleBack,
                 onRestart = {
                     loadPuzzle()
@@ -327,7 +343,7 @@ fun PuzzleGameScreen(onBack: () -> Unit) {
                                     history.add(PuzzleHistoryStep(nextState, currentTurn, move, nextSolutionIndex))
 
                                     if (nextSolutionIndex >= puzzle.solutionMoves.size) {
-                                        dialogState = PuzzleDialogState.WON
+                                        handlePuzzleWon()
                                     } else {
                                         // Opponent Counter Move
                                         val oppMoveStr = puzzle.solutionMoves[nextSolutionIndex]
@@ -349,7 +365,7 @@ fun PuzzleGameScreen(onBack: () -> Unit) {
                                                 history.add(PuzzleHistoryStep(stateAfterOpp, currentTurn, actualOppMove, finalSolutionIndex))
 
                                                 if (finalSolutionIndex >= puzzle.solutionMoves.size) {
-                                                    dialogState = PuzzleDialogState.WON
+                                                    handlePuzzleWon()
                                                 }
                                             }
                                         }
@@ -456,12 +472,15 @@ fun PuzzleGameScreen(onBack: () -> Unit) {
 
         // Start Puzzle Dialog
         if (dialogState == PuzzleDialogState.START) {
+            val categoryName = if (isCustomPuzzle) (PuzzleRepository.currentTacticalCategory ?: puzzle.theme.substringBefore(" -")).trim() else ""
             val displayLevel = if (isCustomPuzzle) {
-                PuzzleRepository.getPuzzlesByCategory(puzzle.theme).indexOf(puzzle) + 1
+                val categoryPuzzles = PuzzleRepository.getPuzzlesByCategory(categoryName)
+                val idx = categoryPuzzles.indexOfFirst { it.id == puzzle.id }
+                if (idx >= 0) idx + 1 else 1
             } else {
                 level
             }
-            val title = if (isCustomPuzzle) "${puzzle.theme} #$displayLevel" else "LEVEL $displayLevel"
+            val title = if (isCustomPuzzle) "$categoryName #$displayLevel" else "LEVEL $displayLevel"
             StartDialog(
                 title = title,
                 color = initialTurn.value,
@@ -480,9 +499,9 @@ fun PuzzleGameScreen(onBack: () -> Unit) {
                 onNextLevel = {
                     val proceed = {
                         if (isCustomPuzzle) {
-                            val category = puzzle.theme
+                            val category = (PuzzleRepository.currentTacticalCategory ?: puzzle.theme.substringBefore(" -")).trim()
                             val allInCategory = PuzzleRepository.getPuzzlesByCategory(category)
-                            val index = allInCategory.indexOf(puzzle)
+                            val index = allInCategory.indexOfFirst { it.id == puzzle.id }
                             if (index >= 0) {
                                 val currentLevelNum = index + 1
                                 com.chessmaster.play.data.LocalLeaderboardManager.unlockNextThemeLevel(context, category, currentLevelNum)

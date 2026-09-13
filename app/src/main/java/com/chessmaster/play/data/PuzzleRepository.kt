@@ -9,6 +9,7 @@ object PuzzleRepository {
 
     var activePlayPuzzle: Puzzle? = null
     var currentPuzzleLevel: Int = 1
+    var currentTacticalCategory: String? = null
 
     val levelPuzzles: List<Puzzle> get() = LevelPuzzlesDatabase.levelPuzzles
 
@@ -22,7 +23,8 @@ object PuzzleRepository {
     }
 
     fun getNextPuzzleInCategory(currentPuzzle: Puzzle): Puzzle? {
-        val puzzles = getPuzzlesByCategory(currentPuzzle.theme.substringBefore(" -"))
+        val cat = (currentTacticalCategory ?: currentPuzzle.theme.substringBefore(" -")).trim()
+        val puzzles = getPuzzlesByCategory(cat)
         val index = puzzles.indexOfFirst { it.id == currentPuzzle.id }
         if (index >= 0 && index < puzzles.size - 1) {
             return puzzles[index + 1]
@@ -31,8 +33,9 @@ object PuzzleRepository {
     }
 
     fun getFirstPuzzleOfNextCategory(currentCategory: String): Puzzle? {
+        val cat = currentCategory.substringBefore(" -").trim()
         val categories = getAllTacticalCategories()
-        val index = categories.indexOf(currentCategory)
+        val index = categories.indexOf(cat)
         if (index >= 0 && index < categories.size - 1) {
             val nextCategory = categories[index + 1]
             return getPuzzlesByCategory(nextCategory).firstOrNull()

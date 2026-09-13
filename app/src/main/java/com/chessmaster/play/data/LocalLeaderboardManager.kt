@@ -79,19 +79,21 @@ object LocalLeaderboardManager {
         val prefs = getPrefs(context)
         val highest = getHighestUnlockedPuzzleLevel(context)
         if (currentLevel >= highest) {
-            prefs.edit().putInt(PUZZLE_HIGHEST_LEVEL, currentLevel + 1).apply()
+            prefs.edit().putInt(PUZZLE_HIGHEST_LEVEL, currentLevel + 1).commit()
         }
     }
 
     fun getHighestUnlockedThemeLevel(context: Context, theme: String): Int {
-        return getPrefs(context).getInt("theme_level_${theme.replace(" ", "_").lowercase()}", 1)
+        val cleanTheme = theme.substringBefore(" -").trim().replace(" ", "_").lowercase()
+        return getPrefs(context).getInt("theme_level_$cleanTheme", 1)
     }
 
     fun unlockNextThemeLevel(context: Context, theme: String, currentLevel: Int) {
+        val cleanTheme = theme.substringBefore(" -").trim().replace(" ", "_").lowercase()
         val prefs = getPrefs(context)
-        val highest = getHighestUnlockedThemeLevel(context, theme)
+        val highest = getHighestUnlockedThemeLevel(context, cleanTheme)
         if (currentLevel >= highest) {
-            prefs.edit().putInt("theme_level_${theme.replace(" ", "_").lowercase()}", currentLevel + 1).apply()
+            prefs.edit().putInt("theme_level_$cleanTheme", currentLevel + 1).commit()
         }
     }
 
