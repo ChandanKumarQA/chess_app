@@ -40,7 +40,7 @@ fun PuzzlesScreen(
 
     var highestUnlockedLevel by remember { mutableIntStateOf(1) }
     var isGridView by remember { mutableStateOf(false) }
-    var showSpecialModesSheet by remember { mutableStateOf(false) }
+    var showOnlySpecialModes by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         highestUnlockedLevel = LocalLeaderboardManager.getHighestUnlockedPuzzleLevel(context)
@@ -102,18 +102,18 @@ fun PuzzlesScreen(
                     )
                 }
 
-                // Special Modes Drawer / Selector Button
+                // Special Modes Toggle Button
                 IconButton(
-                    onClick = { showSpecialModesSheet = true },
+                    onClick = { showOnlySpecialModes = !showOnlySpecialModes },
                     modifier = Modifier
                         .size(38.dp)
                         .clip(RoundedCornerShape(10.dp))
-                        .background(Color(0xFF1E2A20))
+                        .background(if (showOnlySpecialModes) Color(0xFF2E7D32) else Color(0xFF1E2A20))
                 ) {
                     Icon(
                         imageVector = Icons.Default.Explore,
                         contentDescription = "Special Modes",
-                        tint = Color(0xFFFFD54F),
+                        tint = if (showOnlySpecialModes) Color.White else Color(0xFFFFD54F),
                         modifier = Modifier.size(22.dp)
                     )
                 }
@@ -121,24 +121,99 @@ fun PuzzlesScreen(
                 Spacer(modifier = Modifier.width(8.dp))
 
                 // Toggle View (Map <-> Grid) Button
-                IconButton(
-                    onClick = { isGridView = !isGridView },
-                    modifier = Modifier
-                        .size(38.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color(0xFF1E2A20))
-                ) {
-                    Icon(
-                        imageVector = if (isGridView) Icons.Default.Map else Icons.Default.GridView,
-                        contentDescription = "Toggle View",
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
-                    )
+                if (!showOnlySpecialModes) {
+                    IconButton(
+                        onClick = { isGridView = !isGridView },
+                        modifier = Modifier
+                            .size(38.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color(0xFF1E2A20))
+                    ) {
+                        Icon(
+                            imageVector = if (isGridView) Icons.Default.Map else Icons.Default.GridView,
+                            contentDescription = "Toggle View",
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
             }
 
-            // Main Content: Adventure Map or Grid View
-            if (!isGridView) {
+            // Main Content: Special Modes, Adventure Map, or Grid View
+            if (showOnlySpecialModes) {
+                androidx.compose.foundation.lazy.LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(horizontal = 16.dp),
+                    contentPadding = PaddingValues(top = 8.dp, bottom = 24.dp)
+                ) {
+                    item {
+                        Text(
+                            text = "Special Modes",
+                            color = Color.White,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                    }
+
+                    item {
+                        SpecialModeItem(
+                            icon = Icons.Default.Category,
+                            title = "Tactical Themes",
+                            subtitle = "Fork, Pin, Skewer...",
+                            iconBgColor = Color(0xFF1E3A5F),
+                            iconColor = Color(0xFF42A5F5),
+                            onClick = onTacticalThemes
+                        )
+                    }
+
+                    item {
+                        SpecialModeItem(
+                            icon = Icons.Default.Flag,
+                            title = "Endgame Training",
+                            subtitle = "King, Pawn, Rook...",
+                            iconBgColor = Color(0xFF3B1E5F),
+                            iconColor = Color(0xFFAB47BC),
+                            onClick = onEndgameTraining
+                        )
+                    }
+
+                    item {
+                        SpecialModeItem(
+                            icon = Icons.Default.MenuBook,
+                            title = "Opening Traps",
+                            subtitle = "Scholar's Mate, Fried Liver...",
+                            iconBgColor = Color(0xFF3E2723),
+                            iconColor = Color(0xFFFFB300),
+                            onClick = onOpeningTraps
+                        )
+                    }
+
+                    item {
+                        SpecialModeItem(
+                            icon = Icons.Default.Timer,
+                            title = "Puzzle Rush",
+                            subtitle = "3 Minute Challenge",
+                            iconBgColor = Color(0xFF3E1E2F),
+                            iconColor = Color(0xFFE53935),
+                            onClick = onPuzzleRush
+                        )
+                    }
+
+                    item {
+                        SpecialModeItem(
+                            icon = Icons.Default.Favorite,
+                            title = "Survival Mode",
+                            subtitle = "3 Lives • Endless puzzles",
+                            iconBgColor = Color(0xFF4E2020),
+                            iconColor = Color(0xFFEF5350),
+                            onClick = onSurvivalMode
+                        )
+                    }
+                }
+            } else if (!isGridView) {
                 AdventureLevelMap(
                     totalLevels = 100,
                     highestUnlockedLevel = highestUnlockedLevel,
@@ -339,160 +414,7 @@ fun PuzzlesScreen(
                             }
                         }
 
-                        item(span = { GridItemSpan(maxLineSpan) }) {
-                            Spacer(modifier = Modifier.height(28.dp))
-                        }
-
-                        item(span = { GridItemSpan(maxLineSpan) }) {
-                            Text(
-                                text = "Special Modes",
-                                color = Color.White,
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(bottom = 16.dp)
-                            )
-                        }
-
-                        item(span = { GridItemSpan(maxLineSpan) }) {
-                            SpecialModeItem(
-                                icon = Icons.Default.Category,
-                                title = "Tactical Themes",
-                                subtitle = "Fork, Pin, Skewer...",
-                                iconBgColor = Color(0xFF1E3A5F),
-                                iconColor = Color(0xFF42A5F5),
-                                onClick = onTacticalThemes
-                            )
-                        }
-
-                        item(span = { GridItemSpan(maxLineSpan) }) {
-                            SpecialModeItem(
-                                icon = Icons.Default.Flag,
-                                title = "Endgame Training",
-                                subtitle = "King, Pawn, Rook...",
-                                iconBgColor = Color(0xFF3B1E5F),
-                                iconColor = Color(0xFFAB47BC),
-                                onClick = onEndgameTraining
-                            )
-                        }
-
-                        item(span = { GridItemSpan(maxLineSpan) }) {
-                            SpecialModeItem(
-                                icon = Icons.Default.MenuBook,
-                                title = "Opening Traps",
-                                subtitle = "Scholar's Mate, Fried Liver...",
-                                iconBgColor = Color(0xFF3E2723),
-                                iconColor = Color(0xFFFFB300),
-                                onClick = onOpeningTraps
-                            )
-                        }
-
-                        item(span = { GridItemSpan(maxLineSpan) }) {
-                            SpecialModeItem(
-                                icon = Icons.Default.Timer,
-                                title = "Puzzle Rush",
-                                subtitle = "3 Minute Challenge",
-                                iconBgColor = Color(0xFF3E1E2F),
-                                iconColor = Color(0xFFE53935),
-                                onClick = onPuzzleRush
-                            )
-                        }
-
-                        item(span = { GridItemSpan(maxLineSpan) }) {
-                            SpecialModeItem(
-                                icon = Icons.Default.Favorite,
-                                title = "Survival Mode",
-                                subtitle = "3 Lives • Endless puzzles",
-                                iconBgColor = Color(0xFF4E2020),
-                                iconColor = Color(0xFFEF5350),
-                                onClick = onSurvivalMode
-                            )
-                        }
                     }
-                }
-            }
-        }
-
-        // Special Modes Modal Bottom Sheet
-        if (showSpecialModesSheet) {
-            ModalBottomSheet(
-                onDismissRequest = { showSpecialModesSheet = false },
-                containerColor = Color(0xFF1B221C),
-                dragHandle = { BottomSheetDefaults.DragHandle(color = Color(0xFF81C784)) }
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 8.dp)
-                ) {
-                    Text(
-                        text = "Special Puzzle Modes",
-                        color = Color.White,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-
-                    SpecialModeItem(
-                        icon = Icons.Default.Category,
-                        title = "Tactical Themes",
-                        subtitle = "Fork, Pin, Skewer, Deflection...",
-                        iconBgColor = Color(0xFF1E3A5F),
-                        iconColor = Color(0xFF42A5F5),
-                        onClick = {
-                            showSpecialModesSheet = false
-                            onTacticalThemes()
-                        }
-                    )
-
-                    SpecialModeItem(
-                        icon = Icons.Default.Flag,
-                        title = "Endgame Training",
-                        subtitle = "King & Pawn, Rook Endgames...",
-                        iconBgColor = Color(0xFF3B1E5F),
-                        iconColor = Color(0xFFAB47BC),
-                        onClick = {
-                            showSpecialModesSheet = false
-                            onEndgameTraining()
-                        }
-                    )
-
-                    SpecialModeItem(
-                        icon = Icons.Default.MenuBook,
-                        title = "Opening Traps",
-                        subtitle = "Scholar's Mate, Fried Liver, Legal Trap...",
-                        iconBgColor = Color(0xFF3E2723),
-                        iconColor = Color(0xFFFFB300),
-                        onClick = {
-                            showSpecialModesSheet = false
-                            onOpeningTraps()
-                        }
-                    )
-
-                    SpecialModeItem(
-                        icon = Icons.Default.Timer,
-                        title = "Puzzle Rush",
-                        subtitle = "3 Minute Rapid Challenge",
-                        iconBgColor = Color(0xFF3E1E2F),
-                        iconColor = Color(0xFFE53935),
-                        onClick = {
-                            showSpecialModesSheet = false
-                            onPuzzleRush()
-                        }
-                    )
-
-                    SpecialModeItem(
-                        icon = Icons.Default.Favorite,
-                        title = "Survival Mode",
-                        subtitle = "3 Lives • Endless Puzzle Climb",
-                        iconBgColor = Color(0xFF4E2020),
-                        iconColor = Color(0xFFEF5350),
-                        onClick = {
-                            showSpecialModesSheet = false
-                            onSurvivalMode()
-                        }
-                    )
-
-                    Spacer(modifier = Modifier.height(24.dp))
                 }
             }
         }

@@ -47,28 +47,78 @@ class BotGameManager(private val context: Context) {
     }
 
     fun getBotCrowns(botId: String): Int {
-        // By default, match the screenshots: some initial bots already have 3 crowns
-        if (botId in listOf("beg_sven", "beg_chloe", "int_wendy", "int_antonio", "int_isabel", "adv_li", "adp_jake")) {
-            return prefs.getInt(PREFIX_CROWNS + botId, 3)
-        }
         return prefs.getInt(PREFIX_CROWNS + botId, 0)
+    }
+
+    fun getNextBot(currentBotId: String): BotProfile? {
+        val currentBot = BotDatabase.getBotById(currentBotId)
+        val categoryBots = BotDatabase.getBotsByCategory(currentBot.category)
+        val catIndex = categoryBots.indexOfFirst { it.id == currentBotId }
+
+        // 1. Next bot in the same category
+        if (catIndex != -1 && catIndex + 1 < categoryBots.size) {
+            return categoryBots[catIndex + 1]
+        }
+
+        // 2. If finished the category, progress to the next bot in global allBots roster
+        val allBots = BotDatabase.allBots
+        val allIndex = allBots.indexOfFirst { it.id == currentBotId }
+        if (allIndex != -1 && allIndex + 1 < allBots.size) {
+            return allBots[allIndex + 1]
+        }
+
+        return null
     }
 
     fun isBotUnlocked(bot: BotProfile): Boolean {
         if (bot.isUnlockedByDefault) return true
-        return prefs.getBoolean(PREFIX_UNLOCKED + bot.id, false)
+        if (prefs.getBoolean(PREFIX_UNLOCKED + bot.id, false)) return true
+
+        // Progression check: if preceding bot in category has 3 crowns, unlock this bot
+        val categoryBots = BotDatabase.getBotsByCategory(bot.category)
+        val catIndex = categoryBots.indexOfFirst { it.id == bot.id }
+        if (catIndex > 0) {
+            val prevCatBot = categoryBots[catIndex - 1]
+            if (getBotCrowns(prevCatBot.id) >= 3) {
+                return true
+            }
+        }
+
+        // Progression check: if preceding bot in allBots has 3 crowns, unlock this bot
+        val allBots = BotDatabase.allBots
+        val allIndex = allBots.indexOfFirst { it.id == bot.id }
+        if (allIndex > 0) {
+            val prevAllBot = allBots[allIndex - 1]
+            if (getBotCrowns(prevAllBot.id) >= 3) {
+                return true
+            }
+        }
+
+        return false
+    }
+
+    fun isBotUnlocked(botId: String): Boolean {
+        val bot = BotDatabase.getBotById(botId)
+        return isBotUnlocked(bot)
     }
 
     fun unlockBot(botId: String) {
         prefs.edit().putBoolean(PREFIX_UNLOCKED + botId, true).apply()
     }
 
-    fun onBotDefeated(botId: String) {
+    fun onBotDefeated(botId: String): BotProfile? {
         prefs.edit()
             .putInt(PREFIX_CROWNS + botId, 3)
             .apply()
 
-        // Unlock next bot in category if available
+        // Find next opponent
+        val nextBot = getNextBot(botId)
+        if (nextBot != null) {
+            unlockBot(nextBot.id)
+            setSelectedBotId(nextBot.id)
+        }
+
+        // Ensure next bot in current category is also unlocked if present
         val currentBot = BotDatabase.getBotById(botId)
         val categoryBots = BotDatabase.getBotsByCategory(currentBot.category)
         val currentIndex = categoryBots.indexOfFirst { it.id == botId }
@@ -80,6 +130,8 @@ class BotGameManager(private val context: Context) {
         if (getSavedBotGame()?.botId == botId) {
             clearSavedGame()
         }
+
+        return nextBot
     }
 
     fun saveGame(

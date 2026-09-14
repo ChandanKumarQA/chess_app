@@ -81,6 +81,38 @@ class AIEngine(private val gameEngine: GameEngine) {
          20, 30, 10,  0,  0, 10, 30, 20
     )
 
+    suspend fun getBotMove(boardState: BoardState, bot: BotProfile, botColor: PieceColor): Move? {
+        val allLegalMoves = gameEngine.getAllLegalMoves(boardState, botColor)
+        if (allLegalMoves.isEmpty()) return null
+
+        val rating = bot.rating
+
+        // 1. Beginner blunder simulation (authentic to beginner human behavior)
+        val blunderChance = when {
+            rating < 400 -> 40
+            rating < 600 -> 25
+            rating < 800 -> 12
+            rating < 1000 -> 5
+            else -> 0
+        }
+
+        if (blunderChance > 0 && (1..100).random() <= blunderChance) {
+            val nonCaptures = allLegalMoves.filter { !it.isCapture }
+            return if (nonCaptures.isNotEmpty()) nonCaptures.random() else allLegalMoves.random()
+        }
+
+        // 2. Search depth scaling with rating
+        val searchDepth = when {
+            rating < 1000 -> 1  // Beginner: depth 1
+            rating < 1500 -> 2  // Intermediate: depth 2
+            rating < 2000 -> 3  // Pro: depth 3
+            rating < 2400 -> 3  // Master: depth 3 with capture ordering
+            else -> 4           // Grandmaster: depth 4 full alpha-beta
+        }
+
+        return getBestMove(boardState, botColor, searchDepth) ?: allLegalMoves.random()
+    }
+
     suspend fun getBestMove(boardState: BoardState, color: PieceColor, depth: Int): Move? {
         var bestMove: Move? = null
         var maxEval = Int.MIN_VALUE

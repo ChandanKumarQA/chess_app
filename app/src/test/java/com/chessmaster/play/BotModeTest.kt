@@ -8,7 +8,13 @@ import com.chessmaster.play.model.*
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
+import com.chessmaster.play.data.BotGameManager
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 
+@RunWith(RobolectricTestRunner::class)
 class BotModeTest {
 
     @Test
@@ -31,11 +37,11 @@ class BotModeTest {
     @Test
     fun testCategoryCountsMatchScreenshots() {
         assertEquals(5, BotDatabase.getBotsByCategory(BotCategory.BAND_CLASS).size)
-        assertEquals(5, BotDatabase.getBotsByCategory(BotCategory.NEW_TO_CHESS).size)
-        assertEquals(15, BotDatabase.getBotsByCategory(BotCategory.BEGINNER).size)
-        assertEquals(15, BotDatabase.getBotsByCategory(BotCategory.INTERMEDIATE).size)
-        assertEquals(20, BotDatabase.getBotsByCategory(BotCategory.ADVANCED).size)
-        assertEquals(10, BotDatabase.getBotsByCategory(BotCategory.MASTER).size)
+        assertEquals(13, BotDatabase.getBotsByCategory(BotCategory.BEGINNER).size)
+        assertEquals(13, BotDatabase.getBotsByCategory(BotCategory.INTERMEDIATE).size)
+        assertEquals(23, BotDatabase.getBotsByCategory(BotCategory.PRO).size)
+        assertEquals(6, BotDatabase.getBotsByCategory(BotCategory.MASTER).size)
+        assertEquals(10, BotDatabase.getBotsByCategory(BotCategory.GRANDMASTER).size)
         assertEquals(5, BotDatabase.getBotsByCategory(BotCategory.ADAPTIVE).size)
         assertEquals(13, BotDatabase.getBotsByCategory(BotCategory.ATHLETES).size)
     }
@@ -84,5 +90,90 @@ class BotModeTest {
             val parsedPiece = parsedBoard.getPiece(square)
             assertEquals("Piece at $square must match", piece, parsedPiece)
         }
+    }
+
+    @Test
+    fun testNextBotProgression() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val gameManager = BotGameManager(context)
+
+        // 1. Within Band Class category: Cliff -> Leo
+        val nextAfterCliff = gameManager.getNextBot("band_cliff")
+        assertNotNull(nextAfterCliff)
+        assertEquals("band_leo", nextAfterCliff?.id)
+
+        // 2. End of Band Class category: Maestro -> Beginner Martin
+        val nextAfterMaestro = gameManager.getNextBot("band_maestro")
+        assertNotNull(nextAfterMaestro)
+        assertEquals("new_martin", nextAfterMaestro?.id)
+
+        // 3. End of Beginner category: Amir -> Intermediate Marcus
+        val nextAfterAmir = gameManager.getNextBot("beg_amir")
+        assertNotNull(nextAfterAmir)
+        assertEquals("beg_marcus", nextAfterAmir?.id)
+
+        // 4. End of Intermediate category: Hassan -> Pro Kareem
+        val nextAfterHassan = gameManager.getNextBot("int_hassan")
+        assertNotNull(nextAfterHassan)
+        assertEquals("int_kareem", nextAfterHassan?.id)
+
+        // 5. Last bot in entire roster: Novak -> null
+        val nextAfterNovak = gameManager.getNextBot("ath_novak")
+        assertNull(nextAfterNovak)
+    }
+
+    @Test
+    fun testBotDefeatUnlockingAndProgression() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val gameManager = BotGameManager(context)
+
+        // Check initial state: band_cliff unlocked, band_leo locked
+        assertTrue("Cliff should be unlocked by default", gameManager.isBotUnlocked("band_cliff"))
+        // Clear prefs for fresh test
+        context.getSharedPreferences("chess_bot_prefs", Context.MODE_PRIVATE).edit().clear().apply()
+
+        // Defeat Cliff
+        val nextBot = gameManager.onBotDefeated("band_cliff")
+        assertNotNull("Defeating Cliff should return next bot", nextBot)
+        assertEquals("band_leo", nextBot?.id)
+
+        // Verify Leo is now unlocked
+        assertTrue("Leo should be unlocked after Cliff is defeated", gameManager.isBotUnlocked("band_leo"))
+        // Verify selected bot is now Leo
+        assertEquals("band_leo", gameManager.getSelectedBotId())
+        // Verify Cliff earned 3 crowns
+        assertEquals(3, gameManager.getBotCrowns("band_cliff"))
+
+        // Defeat Leo
+        val nextAfterLeo = gameManager.onBotDefeated("band_leo")
+        assertEquals("band_nora", nextAfterLeo?.id)
+        assertTrue(gameManager.isBotUnlocked("band_nora"))
+        assertEquals("band_nora", gameManager.getSelectedBotId())
+    }
+
+    @Test
+    fun testSequentialUnlockingWithinTier() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val gameManager = BotGameManager(context)
+        context.getSharedPreferences("chess_bot_prefs", Context.MODE_PRIVATE).edit().clear().apply()
+
+        // Beginner tier:
+        // 1st: new_martin (250) -> unlocked by default
+        // 2nd: new_elani (400) -> locked initially
+        // 3rd: new_olivia (550) -> locked initially
+        assertTrue("Martin should be unlocked by default", gameManager.isBotUnlocked("new_martin"))
+        assertFalse("Elani should be locked initially", gameManager.isBotUnlocked("new_elani"))
+        assertFalse("Olivia should be locked initially", gameManager.isBotUnlocked("new_olivia"))
+
+        // Defeat Martin
+        val nextAfterMartin = gameManager.onBotDefeated("new_martin")
+        assertEquals("new_elani", nextAfterMartin?.id)
+        assertTrue("Elani should now be unlocked after defeating Martin", gameManager.isBotUnlocked("new_elani"))
+        assertFalse("Olivia should still be locked", gameManager.isBotUnlocked("new_olivia"))
+
+        // Defeat Elani
+        val nextAfterElani = gameManager.onBotDefeated("new_elani")
+        assertEquals("new_olivia", nextAfterElani?.id)
+        assertTrue("Olivia should now be unlocked after defeating Elani", gameManager.isBotUnlocked("new_olivia"))
     }
 }

@@ -1,5 +1,6 @@
 package com.chessmaster.play.ui.screens
 
+import android.app.Activity
 import android.media.MediaPlayer
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
@@ -34,6 +35,7 @@ import com.chessmaster.play.model.*
 import com.chessmaster.play.ui.components.CapturedPiecesPanel
 import com.chessmaster.play.ui.components.ChessBoard
 import com.chessmaster.play.ui.components.bot.BotAvatar
+import com.chessmaster.play.InterstitialAdManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -46,6 +48,8 @@ fun BotGameScreen(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
+    val activity = context as? Activity
+    val interstitialAdManager = remember { InterstitialAdManager(context) }
     val gameManager = remember { BotGameManager(context) }
     val gameEngine = remember { GameEngine() }
     val aiEngine = remember { AIEngine(gameEngine) }
@@ -136,6 +140,13 @@ fun BotGameScreen(
         onBack()
     }
 
+    // Ensure onBotDefeated is reliably triggered when user checkmates bot
+    LaunchedEffect(gameState, currentTurn) {
+        if (gameState == GameState.CHECKMATE && currentTurn == botColor) {
+            gameManager.onBotDefeated(currentBot.id)
+        }
+    }
+
     // Bot move calculation and trigger
     fun triggerBotMove() {
         if (gameState != GameState.IN_PROGRESS) return
@@ -145,28 +156,17 @@ fun BotGameScreen(
         coroutineScope.launch {
             // 1. Realistic thinking delay according to bot rating/difficulty
             val delayMs = when {
-                currentBot.rating < 1000 -> (600L..1000L).random()
-                currentBot.rating < 1600 -> (900L..1500L).random()
-                else -> (1200L..2000L).random()
+                currentBot.rating < 1000 -> (400L..800L).random()
+                currentBot.rating < 1500 -> (600L..1100L).random()
+                currentBot.rating < 2000 -> (900L..1500L).random()
+                currentBot.rating < 2400 -> (1200L..1900L).random()
+                else -> (1500L..2500L).random()
             }
             delay(delayMs)
 
-            // 2. Compute legal move
+            // 2. Compute legal move with hardness matching bot rating
             val computedMove = withContext(Dispatchers.Default) {
-                val allLegalMoves = gameEngine.getAllLegalMoves(boardState, botColor)
-                if (allLegalMoves.isEmpty()) null
-                else if (currentBot.rating < 600 && (1..100).random() <= 30) {
-                    // Beginner bots make occasional natural mistakes/fun moves
-                    allLegalMoves.random()
-                } else {
-                    val searchDepth = when {
-                        currentBot.rating < 1000 -> 1
-                        currentBot.rating < 1600 -> 2
-                        currentBot.rating < 2200 -> 3
-                        else -> 4
-                    }
-                    aiEngine.getBestMove(boardState, botColor, searchDepth) ?: allLegalMoves.random()
-                }
+                aiEngine.getBotMove(boardState, currentBot, botColor)
             }
 
             // 3. Execute move safely on main thread
@@ -308,15 +308,22 @@ fun BotGameScreen(
                     )
 
                     IconButton(onClick = {
-                        // Restart fresh game
-                        boardState = BoardState.initial()
-                        currentTurn = PieceColor.WHITE
-                        moveHistorySan = emptyList()
-                        lastMove = null
-                        isCheck = false
-                        gameState = GameState.IN_PROGRESS
-                        botDialogue = currentBot.catchphrase
-                        gameManager.clearSavedGame()
+                        val restartAction = {
+                            // Restart fresh game
+                            boardState = BoardState.initial()
+                            currentTurn = PieceColor.WHITE
+                            moveHistorySan = emptyList()
+                            lastMove = null
+                            isCheck = false
+                            gameState = GameState.IN_PROGRESS
+                            botDialogue = currentBot.catchphrase
+                            gameManager.clearSavedGame()
+                        }
+                        if (activity != null) {
+                            interstitialAdManager.showAd(activity) { restartAction() }
+                        } else {
+                            restartAction()
+                        }
                     }) {
                         Icon(
                             imageVector = Icons.Default.Refresh,
@@ -499,6 +506,7 @@ fun BotGameScreen(
         if (gameState != GameState.IN_PROGRESS) {
             val userWon = gameState == GameState.CHECKMATE && currentTurn == botColor
             val botWon = gameState == GameState.CHECKMATE && currentTurn == humanColor
+            val nextBot = if (userWon) gameManager.getNextBot(currentBot.id) else null
 
             AlertDialog(
                 onDismissRequest = { /* ignore */ },
@@ -506,50 +514,134 @@ fun BotGameScreen(
                 titleContentColor = Color.White,
                 textContentColor = Color.White.copy(alpha = 0.85f),
                 title = {
-                    Text(
-                        text = when {
-                            userWon -> "👑 Victory!"
-                            botWon -> "Checkmate - Defeat"
-                            else -> "Game Drawn"
-                        },
-                        fontWeight = FontWeight.Bold
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = when {
+                                userWon -> "👑 Victory!"
+                                botWon -> "Checkmate - Defeat"
+                                else -> "Game Drawn"
+                            },
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp,
+                            color = if (userWon) Color(0xFFFFD700) else Color.White
+                        )
+                    }
                 },
                 text = {
-                    Column {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         Text(
                             text = when {
                                 userWon -> "Outstanding! You defeated ${currentBot.fullDisplayName} and earned 3 Gold Crowns 👑👑👑!"
                                 botWon -> "${currentBot.name} checkmated you. Don't give up, try again!"
                                 else -> "The game ended in a draw (${gameState.name.lowercase().replace('_', ' ')})."
-                            }
+                            },
+                            fontSize = 14.sp
                         )
+
+                        if (userWon && nextBot != null) {
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = Color(0xFF263242),
+                                modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(10.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    BotAvatar(
+                                        style = nextBot.avatarStyle,
+                                        size = 42.dp
+                                    )
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Column {
+                                        Text(
+                                            text = "Next Opponent Unlocked! 🔓",
+                                            color = greenAccent,
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Text(
+                                            text = "${nextBot.fullDisplayName} (${nextBot.rating})",
+                                            color = Color.White,
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 confirmButton = {
-                    Button(
-                        onClick = {
-                            // Start fresh game against this bot
-                            boardState = BoardState.initial()
-                            currentTurn = PieceColor.WHITE
-                            moveHistorySan = emptyList()
-                            lastMove = null
-                            isCheck = false
-                            gameState = GameState.IN_PROGRESS
-                            botDialogue = currentBot.catchphrase
-                            gameManager.clearSavedGame()
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = greenAccent)
-                    ) {
-                        Text("Play Again", fontWeight = FontWeight.Bold)
+                    if (userWon && nextBot != null) {
+                        Button(
+                            onClick = {
+                                // Transition directly to the newly unlocked next bot!
+                                currentBot = nextBot
+                                gameManager.setSelectedBotId(nextBot.id)
+                                boardState = BoardState.initial()
+                                currentTurn = PieceColor.WHITE
+                                moveHistorySan = emptyList()
+                                lastMove = null
+                                isCheck = false
+                                gameState = GameState.IN_PROGRESS
+                                botDialogue = nextBot.catchphrase
+                                gameManager.clearSavedGame()
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = greenAccent),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("Next Bot ➡️", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                        }
+                    } else {
+                        Button(
+                            onClick = {
+                                val restartAction = {
+                                    // Start fresh game against this bot
+                                    boardState = BoardState.initial()
+                                    currentTurn = PieceColor.WHITE
+                                    moveHistorySan = emptyList()
+                                    lastMove = null
+                                    isCheck = false
+                                    gameState = GameState.IN_PROGRESS
+                                    botDialogue = currentBot.catchphrase
+                                    gameManager.clearSavedGame()
+                                }
+                                if (activity != null) {
+                                    interstitialAdManager.showAd(activity) { restartAction() }
+                                } else {
+                                    restartAction()
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = greenAccent),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("Play Again", fontWeight = FontWeight.Bold)
+                        }
                     }
                 },
                 dismissButton = {
-                    TextButton(onClick = {
-                        gameManager.clearSavedGame()
-                        onBack()
-                    }) {
-                        Text("Exit", color = Color.White.copy(alpha = 0.7f))
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        if (userWon && nextBot != null) {
+                            TextButton(onClick = {
+                                boardState = BoardState.initial()
+                                currentTurn = PieceColor.WHITE
+                                moveHistorySan = emptyList()
+                                lastMove = null
+                                isCheck = false
+                                gameState = GameState.IN_PROGRESS
+                                botDialogue = currentBot.catchphrase
+                                gameManager.clearSavedGame()
+                            }) {
+                                Text("Play Again", color = Color.White.copy(alpha = 0.7f))
+                            }
+                        }
+                        TextButton(onClick = {
+                            gameManager.clearSavedGame()
+                            onBack()
+                        }) {
+                            Text("Exit", color = Color.White.copy(alpha = 0.7f))
+                        }
                     }
                 }
             )

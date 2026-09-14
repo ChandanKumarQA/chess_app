@@ -21,6 +21,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -46,6 +47,21 @@ fun BotSelectionScreen(
     val gameManager = remember { BotGameManager(context) }
     var selectedBotId by remember { mutableStateOf(gameManager.getSelectedBotId()) }
     var isSoundOn by remember { mutableStateOf(gameManager.isSoundEnabled()) }
+
+    var unlockedBotIds by remember {
+        mutableStateOf(BotDatabase.allBots.filter { gameManager.isBotUnlocked(it) }.map { it.id }.toSet())
+    }
+    var crownsMap by remember {
+        mutableStateOf(BotDatabase.allBots.associate { it.id to gameManager.getBotCrowns(it.id) })
+    }
+
+    // Refresh reactive states whenever this screen is active or recomposed
+    LaunchedEffect(Unit) {
+        selectedBotId = gameManager.getSelectedBotId()
+        unlockedBotIds = BotDatabase.allBots.filter { gameManager.isBotUnlocked(it) }.map { it.id }.toSet()
+        crownsMap = BotDatabase.allBots.associate { it.id to gameManager.getBotCrowns(it.id) }
+    }
+
     val selectedBot = remember(selectedBotId) { BotDatabase.getBotById(selectedBotId) }
     val hasSavedGame = remember { gameManager.hasSavedGame() }
 
@@ -128,21 +144,35 @@ fun BotSelectionScreen(
                 // BAND CLASS SECTION
                 BandClassSection(
                     selectedBotId = selectedBotId,
+                    unlockedBotIds = unlockedBotIds,
+                    crownsMap = crownsMap,
                     onSelectBot = { bot ->
-                        selectedBotId = bot.id
-                        gameManager.setSelectedBotId(bot.id)
+                        if (unlockedBotIds.contains(bot.id) || gameManager.isBotUnlocked(bot)) {
+                            selectedBotId = bot.id
+                            gameManager.setSelectedBotId(bot.id)
+                        } else {
+                            val categoryBots = BotDatabase.getBotsByCategory(bot.category)
+                            val catIndex = categoryBots.indexOfFirst { it.id == bot.id }
+                            val prevBot = if (catIndex > 0) categoryBots[catIndex - 1] else null
+                            val msg = if (prevBot != null) {
+                                "Defeat ${prevBot.name} (${prevBot.rating}) to unlock ${bot.name}!"
+                            } else {
+                                "Defeat earlier bots to unlock ${bot.name}!"
+                            }
+                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                        }
                     }
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // STANDARD BOT CATEGORIES
+                // STANDARD BOT CATEGORIES (Beginner, Intermediate, Pro, Master, Grandmaster, etc.)
                 val standardCategories = listOf(
-                    BotCategory.NEW_TO_CHESS,
                     BotCategory.BEGINNER,
                     BotCategory.INTERMEDIATE,
-                    BotCategory.ADVANCED,
+                    BotCategory.PRO,
                     BotCategory.MASTER,
+                    BotCategory.GRANDMASTER,
                     BotCategory.ADAPTIVE,
                     BotCategory.ATHLETES
                 )
@@ -151,17 +181,22 @@ fun BotSelectionScreen(
                     StandardCategorySection(
                         category = category,
                         selectedBotId = selectedBotId,
-                        gameManager = gameManager,
+                        unlockedBotIds = unlockedBotIds,
+                        crownsMap = crownsMap,
                         onSelectBot = { bot ->
-                            if (gameManager.isBotUnlocked(bot)) {
+                            if (unlockedBotIds.contains(bot.id) || gameManager.isBotUnlocked(bot)) {
                                 selectedBotId = bot.id
                                 gameManager.setSelectedBotId(bot.id)
                             } else {
-                                Toast.makeText(
-                                    context,
-                                    "Defeat earlier bots to unlock ${bot.name}!",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                                val categoryBots = BotDatabase.getBotsByCategory(bot.category)
+                                val catIndex = categoryBots.indexOfFirst { it.id == bot.id }
+                                val prevBot = if (catIndex > 0) categoryBots[catIndex - 1] else null
+                                val msg = if (prevBot != null) {
+                                    "Defeat ${prevBot.name} (${prevBot.rating}) to unlock ${bot.name}!"
+                                } else {
+                                    "Defeat earlier bots to unlock ${bot.name}!"
+                                }
+                                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                             }
                         }
                     )
@@ -302,6 +337,8 @@ fun FeaturedBotBanner(
 @Composable
 fun BandClassSection(
     selectedBotId: String,
+    unlockedBotIds: Set<String>,
+    crownsMap: Map<String, Int>,
     onSelectBot: (BotProfile) -> Unit
 ) {
     val bots = remember { BotDatabase.bandBots }
@@ -329,22 +366,40 @@ fun BandClassSection(
                 )
             }
 
-            // Green Timer Badge
-            Surface(
-                color = Color(0xFF81B64C),
-                shape = RoundedCornerShape(6.dp),
-                modifier = Modifier.padding(vertical = 2.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // Rating Range Pill
+                Surface(
+                    color = Color(0xFF1B232D),
+                    shape = RoundedCornerShape(6.dp),
+                    border = BorderStroke(1.dp, Color(0xFF81B64C).copy(alpha = 0.45f))
                 ) {
                     Text(
-                        text = "⏱ 18D",
-                        color = Color.White,
+                        text = "⚡ 300 - 1200",
+                        color = Color(0xFF81B64C),
                         fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.ExtraBold,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                     )
+                }
+
+                Spacer(modifier = Modifier.width(6.dp))
+
+                // Green Timer Badge
+                Surface(
+                    color = Color(0xFF81B64C),
+                    shape = RoundedCornerShape(6.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = "⏱ 18D",
+                            color = Color.White,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }
@@ -358,6 +413,9 @@ fun BandClassSection(
         ) {
             bots.forEach { bot ->
                 val isSelected = bot.id == selectedBotId
+                val isUnlocked = unlockedBotIds.contains(bot.id)
+                val crowns = crownsMap[bot.id] ?: 0
+
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -387,7 +445,7 @@ fun BandClassSection(
                             )
                         }
 
-                        // Coin Badge
+                        // Coin Badge or Lock/Crown indicator
                         Surface(
                             color = Color(0xFF1B232D),
                             shape = RoundedCornerShape(4.dp),
@@ -399,11 +457,24 @@ fun BandClassSection(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
                             ) {
-                                Text(text = "🪙", fontSize = 9.sp)
-                                Spacer(modifier = Modifier.width(2.dp))
+                                if (!isUnlocked) {
+                                    Icon(
+                                        imageVector = Icons.Default.Lock,
+                                        contentDescription = "Locked",
+                                        tint = Color.White.copy(alpha = 0.75f),
+                                        modifier = Modifier.size(11.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(2.dp))
+                                } else if (crowns >= 3) {
+                                    Text(text = "👑", fontSize = 9.sp)
+                                    Spacer(modifier = Modifier.width(2.dp))
+                                } else {
+                                    Text(text = "🪙", fontSize = 9.sp)
+                                    Spacer(modifier = Modifier.width(2.dp))
+                                }
                                 Text(
                                     text = "${bot.coinCost}",
-                                    color = Color(0xFFFFD54F),
+                                    color = if (isUnlocked) Color(0xFFFFD54F) else Color.White.copy(alpha = 0.6f),
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -488,30 +559,70 @@ fun MilestoneRewardTrack() {
 fun StandardCategorySection(
     category: BotCategory,
     selectedBotId: String,
-    gameManager: BotGameManager,
+    unlockedBotIds: Set<String>,
+    crownsMap: Map<String, Int>,
     onSelectBot: (BotProfile) -> Unit
 ) {
     val bots = remember(category) { BotDatabase.getBotsByCategory(category) }
 
     Column(modifier = Modifier.fillMaxWidth()) {
-        // Section Title: e.g. "Beginner 15"
+        // Section Header: Category Name, Count, and Rating Range Pill
         Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(bottom = 8.dp)
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = category.displayName,
+                    color = Color.White.copy(alpha = 0.95f),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Surface(
+                    color = Color(0xFF242E3B),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text(
+                        text = "${category.count}",
+                        color = Color.White.copy(alpha = 0.65f),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.dp)
+                    )
+                }
+            }
+
+            // Rating Range Pill
+            Surface(
+                color = Color(0xFF1B232D),
+                shape = RoundedCornerShape(6.dp),
+                border = BorderStroke(1.dp, Color(0xFF81B64C).copy(alpha = 0.45f))
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                ) {
+                    Text(
+                        text = "⚡ ${category.ratingRange}",
+                        color = Color(0xFF81B64C),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                }
+            }
+        }
+
+        if (category.subtitle.isNotEmpty()) {
             Text(
-                text = category.displayName,
-                color = Color.White.copy(alpha = 0.85f),
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold
+                text = category.subtitle,
+                color = Color.White.copy(alpha = 0.45f),
+                fontSize = 12.sp,
+                modifier = Modifier.padding(top = 2.dp, bottom = 8.dp)
             )
-            Spacer(modifier = Modifier.width(6.dp))
-            Text(
-                text = "${category.count}",
-                color = Color.White.copy(alpha = 0.5f),
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold
-            )
+        } else {
+            Spacer(modifier = Modifier.height(8.dp))
         }
 
         // 5-Column Grid of Avatar Cards
@@ -526,8 +637,8 @@ fun StandardCategorySection(
                         if (i < rowBots.size) {
                             val bot = rowBots[i]
                             val isSelected = bot.id == selectedBotId
-                            val isUnlocked = gameManager.isBotUnlocked(bot)
-                            val crowns = gameManager.getBotCrowns(bot.id)
+                            val isUnlocked = unlockedBotIds.contains(bot.id)
+                            val crowns = crownsMap[bot.id] ?: 0
 
                             BotCard(
                                 bot = bot,
@@ -560,7 +671,7 @@ fun BotCard(
         modifier = modifier
             .aspectRatio(0.85f)
             .clip(RoundedCornerShape(8.dp))
-            .background(Color(0xFF222B37))
+            .background(if (isUnlocked) Color(0xFF222B37) else Color(0xFF1A212B))
             .then(
                 if (isSelected) Modifier.border(2.5.dp, Color(0xFF81B64C), RoundedCornerShape(8.dp))
                 else Modifier
@@ -581,11 +692,12 @@ fun BotCard(
             ) {
                 BotAvatar(
                     style = bot.avatarStyle,
-                    size = 46.dp
+                    size = 46.dp,
+                    modifier = if (!isUnlocked) Modifier.alpha(0.55f) else Modifier
                 )
             }
 
-            // Bottom state: Locked (🔒) or Crowned (👑👑👑) or blank
+            // Bottom state: Locked (🔒) or Crowned (👑👑👑) or Rating
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -598,8 +710,8 @@ fun BotCard(
                         Icon(
                             imageVector = Icons.Default.Lock,
                             contentDescription = "Locked",
-                            tint = Color.White.copy(alpha = 0.75f),
-                            modifier = Modifier.size(13.dp)
+                            tint = Color.White.copy(alpha = 0.65f),
+                            modifier = Modifier.size(12.dp)
                         )
                     }
                     crowns >= 3 -> {
@@ -609,7 +721,15 @@ fun BotCard(
                             textAlign = TextAlign.Center
                         )
                     }
-                    else -> Unit
+                    else -> {
+                        Text(
+                            text = "${bot.rating}",
+                            color = Color.White.copy(alpha = 0.65f),
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             }
         }

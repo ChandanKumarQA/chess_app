@@ -319,12 +319,34 @@ fun PuzzleGameScreen(onBack: () -> Unit) {
                                 legalMoves = engine.getLegalMoves(boardState!!, square)
                             }
                         } else {
-                            val move = legalMoves.find { it.to == square }
-                            if (move != null) {
-                                val expectedMoveStr = puzzle.solutionMoves.getOrNull(solutionIndex)
-                                val attemptedMoveStr = "${move.from}${move.to}"
+                            val expectedMoveStr = puzzle.solutionMoves.getOrNull(solutionIndex)
+                            // Find the move that matches the expected promotion if any, otherwise default to Queen
+                            val move = legalMoves.find {
+                                val promoChar = when (it.promotionTo) {
+                                    PieceType.QUEEN -> "q"
+                                    PieceType.ROOK -> "r"
+                                    PieceType.BISHOP -> "b"
+                                    PieceType.KNIGHT -> "n"
+                                    else -> ""
+                                }
+                                val attempt = "${it.from}${it.to}$promoChar"
+                                it.to == square && attempt == expectedMoveStr
+                            } ?: legalMoves.find { 
+                                it.to == square && (it.promotionTo == null || it.promotionTo == PieceType.QUEEN) 
+                            } ?: legalMoves.find { it.to == square }
 
-                                if (expectedMoveStr == attemptedMoveStr) {
+                            if (move != null) {
+                                val promoChar = when (move.promotionTo) {
+                                    PieceType.QUEEN -> "q"
+                                    PieceType.ROOK -> "r"
+                                    PieceType.BISHOP -> "b"
+                                    PieceType.KNIGHT -> "n"
+                                    else -> ""
+                                }
+                                val attemptedMoveStr = "${move.from}${move.to}$promoChar"
+
+                                // If expectedMoveStr is 5 chars (promotion) and attempted matches it, or if it matches by start, we accept it.
+                                if (expectedMoveStr == attemptedMoveStr || (expectedMoveStr != null && expectedMoveStr.startsWith("${move.from}${move.to}"))) {
                                     // Correct Move!
                                     coachBubbleVisible = false
                                     voiceManager.stop()

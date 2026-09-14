@@ -2,17 +2,25 @@ package com.chessmaster.play.model
 
 enum class BotCategory(
     val displayName: String,
+    val ratingRange: String,
+    val minRating: Int,
+    val maxRating: Int,
     val count: Int,
     val subtitle: String = ""
 ) {
-    BAND_CLASS("Band Class", 5, "Special Event"),
-    NEW_TO_CHESS("New to Chess", 5, "Getting Started"),
-    BEGINNER("Beginner", 15, "Friendly Opponents"),
-    INTERMEDIATE("Intermediate", 15, "Solid Competitors"),
-    ADVANCED("Advanced", 20, "Formidable Tacticians"),
-    MASTER("Master", 10, "World-Class Grandmasters"),
-    ADAPTIVE("Adaptive", 5, "Dynamic Strength"),
-    ATHLETES("Athletes", 13, "Sports Icons")
+    BAND_CLASS("Band Class", "300 - 1200", 300, 1200, 5, "Special Event"),
+    BEGINNER("Beginner", "250 - 1000", 250, 1000, 13, "Fundamental Basics"),
+    INTERMEDIATE("Intermediate", "1000 - 1500", 1000, 1500, 13, "Solid Competitors"),
+    PRO("Pro", "1500 - 2000", 1500, 2000, 23, "Sharp Tacticians"),
+    MASTER("Master", "2000 - 2400", 2000, 2400, 6, "Titled Champions"),
+    GRANDMASTER("Grandmaster", "2400 - 2900+", 2400, 2900, 10, "World-Class Super GMs"),
+    ADAPTIVE("Adaptive", "1200 - 2000", 1200, 2000, 5, "Dynamic Strength"),
+    ATHLETES("Athletes", "1350 - 1850", 1350, 1850, 13, "Sports Icons");
+
+    companion object {
+        val NEW_TO_CHESS get() = BEGINNER
+        val ADVANCED get() = PRO
+    }
 }
 
 enum class HairType {
