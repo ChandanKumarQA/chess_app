@@ -29,7 +29,7 @@ import com.google.android.gms.ads.admanager.AdManagerAdView
 private const val TAG = "BannerAd"
 
 // AdMob and GAM configuration
-const val DEFAULT_ADMOB_BANNER_ID = "ca-app-pub-8940048544519183/9957781417"
+const val DEFAULT_ADMOB_BANNER_ID = "ca-app-pub-8940048544519183/3068957289"
 const val DEFAULT_GAM_BANNER_ID = "/23374332010/chess_master"
 
 val DEFAULT_BANNER_SIZES = listOf(

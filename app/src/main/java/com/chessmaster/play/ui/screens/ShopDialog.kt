@@ -71,13 +71,52 @@ fun ShopDialog(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Items
-                ShopAdItemRow(title = "1 HINT", buttonColor = Color(0xFF00ACC1), borderColor = Color(0xFF00838F), adManager = adManager, activity = activity, rewardAmount = 1, onHintsEarned = onHintsEarned)
+                ShopAdItemRow(
+                    title = "5 HINTS",
+                    buttonText = "Watch 1 ad",
+                    badgeText = "1 Ad (5 Hints)",
+                    buttonColor = Color(0xFF00ACC1),
+                    borderColor = Color(0xFF00838F),
+                    onClick = {
+                        if (activity != null) {
+                            adManager.showAd(activity) { _ ->
+                                onHintsEarned(5)
+                                Toast.makeText(activity, "Earned 5 Hints!", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                )
+
                 HorizontalDivider(color = Color(0xFF3E1D04), thickness = 1.dp)
-                
+
                 val greenColor = Color(0xFF4CAF50)
                 val greenBorder = Color(0xFF388E3C)
-                
-                ShopAdItemRow(title = "10 HINTS", buttonColor = greenColor, borderColor = greenBorder, adManager = adManager, activity = activity, rewardAmount = 10, onHintsEarned = onHintsEarned)
+
+                ShopAdItemRow(
+                    title = "10 HINTS",
+                    buttonText = "Watch 2 ads",
+                    badgeText = "2 Ads (10 Hints)",
+                    buttonColor = greenColor,
+                    borderColor = greenBorder,
+                    onClick = {
+                        if (activity != null) {
+                            adManager.showConsecutiveAds(
+                                activity = activity,
+                                targetAdCount = 2,
+                                onSingleAdWatched = { adIndex ->
+                                    if (adIndex == 1) {
+                                        onHintsEarned(5)
+                                    } else if (adIndex == 2) {
+                                        onHintsEarned(5)
+                                    }
+                                },
+                                onAllAdsCompleted = {
+                                    Toast.makeText(activity, "Awesome! Earned 10 Hints!", Toast.LENGTH_SHORT).show()
+                                }
+                            )
+                        }
+                    }
+                )
             }
         }
     }
@@ -88,10 +127,9 @@ fun ShopAdItemRow(
     title: String,
     buttonColor: Color,
     borderColor: Color,
-    adManager: RewardedAdManager,
-    activity: Activity?,
-    rewardAmount: Int,
-    onHintsEarned: (Int) -> Unit
+    buttonText: String = "Watch an ad",
+    badgeText: String? = null,
+    onClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -100,22 +138,25 @@ fun ShopAdItemRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = title,
-            color = Color.White,
-            fontWeight = FontWeight.Bold,
-            fontSize = 18.sp
-        )
-        
+        Column {
+            Text(
+                text = title,
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp
+            )
+            if (badgeText != null) {
+                Text(
+                    text = badgeText,
+                    color = Color(0xFFFFD700).copy(alpha = 0.9f),
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 11.sp
+                )
+            }
+        }
+
         Button(
-            onClick = {
-                if (activity != null) {
-                    adManager.showAd(activity) { _ ->
-                        // Override ad unit reward with local reward amount
-                        onHintsEarned(rewardAmount)
-                    }
-                }
-            },
+            onClick = onClick,
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.Transparent
             ),
@@ -133,7 +174,7 @@ fun ShopAdItemRow(
                 .border(1.dp, borderColor, RoundedCornerShape(8.dp))
         ) {
             Text(
-                text = "Watch an ad",
+                text = buttonText,
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp

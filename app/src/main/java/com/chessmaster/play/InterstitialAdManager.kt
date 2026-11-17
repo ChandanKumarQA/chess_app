@@ -16,7 +16,7 @@ class InterstitialAdManager(private val context: Context) {
 
     // Using Google's test ad unit ID during development
     // private val adUnitId = "ca-app-pub-3940256099942544/1033173712"
-    private val adUnitId = "ca-app-pub-8940048544519183/8091729072" // REAL ID
+    private val adUnitId = "ca-app-pub-8940048544519183/3260528972" // REAL ID
 
     init {
         loadAd()

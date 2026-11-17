@@ -10,6 +10,7 @@ object PuzzleRepository {
     var activePlayPuzzle: Puzzle? = null
     var currentPuzzleLevel: Int = 1
     var currentTacticalCategory: String? = null
+    var puzzlesSolvedSinceAd: Int = 0
 
     val levelPuzzles: List<Puzzle> get() = LevelPuzzlesDatabase.levelPuzzles
 

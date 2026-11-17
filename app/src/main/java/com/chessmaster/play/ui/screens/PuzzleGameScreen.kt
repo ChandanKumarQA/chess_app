@@ -231,15 +231,8 @@ fun PuzzleGameScreen(onBack: () -> Unit) {
                     TextButton(onClick = {
                         showExitDialog = false
                         voiceManager.stop()
-                        if (activity != null) {
-                            interstitialAdManager.showAd(activity) {
-                                PuzzleRepository.activePlayPuzzle = null
-                                onBack()
-                            }
-                        } else {
-                            PuzzleRepository.activePlayPuzzle = null
-                            onBack()
-                        }
+                        PuzzleRepository.activePlayPuzzle = null
+                        onBack()
                     }) {
                         Text("Yes", color = Color(0xFFF44336), fontWeight = FontWeight.Bold)
                     }
@@ -551,22 +544,18 @@ fun PuzzleGameScreen(onBack: () -> Unit) {
                             dialogState = PuzzleDialogState.PLAYING
                         }
                     }
-                    if (activity != null && level % 2 == 0 && !isCustomPuzzle) {
+                    PuzzleRepository.puzzlesSolvedSinceAd++
+                    // Show interstitial ad only after 4-5 puzzles (every 5 puzzles solved)
+                    if (activity != null && PuzzleRepository.puzzlesSolvedSinceAd >= 5) {
+                        PuzzleRepository.puzzlesSolvedSinceAd = 0
                         interstitialAdManager.showAd(activity) { proceed() }
                     } else {
                         proceed()
                     }
                 },
                 onRestart = {
-                    val restartAction = {
-                        loadPuzzle()
-                        dialogState = PuzzleDialogState.PLAYING
-                    }
-                    if (activity != null) {
-                        interstitialAdManager.showAd(activity) { restartAction() }
-                    } else {
-                        restartAction()
-                    }
+                    loadPuzzle()
+                    dialogState = PuzzleDialogState.PLAYING
                 }
             )
         }
@@ -575,15 +564,8 @@ fun PuzzleGameScreen(onBack: () -> Unit) {
         if (dialogState == PuzzleDialogState.LOST) {
             LostDialog(
                 onTryAgain = {
-                    val tryAgainAction = {
-                        undoMove()
-                        dialogState = PuzzleDialogState.PLAYING
-                    }
-                    if (activity != null) {
-                        interstitialAdManager.showAd(activity) { tryAgainAction() }
-                    } else {
-                        tryAgainAction()
-                    }
+                    undoMove()
+                    dialogState = PuzzleDialogState.PLAYING
                 }
             )
         }
