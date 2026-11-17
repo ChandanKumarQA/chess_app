@@ -38,6 +38,7 @@ import com.chessmaster.play.engine.NotationParser
 import com.chessmaster.play.model.BoardState
 import com.chessmaster.play.model.Move
 import com.chessmaster.play.model.PieceColor
+import com.chessmaster.play.model.PieceType
 import com.chessmaster.play.model.Puzzle
 import com.chessmaster.play.model.Square
 import com.chessmaster.play.ui.components.ChessBoard

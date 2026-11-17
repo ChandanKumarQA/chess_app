@@ -128,19 +128,30 @@ fun MainScreen(viewModel: ChessViewModel, onBack: () -> Unit) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            val category = when (cpuLevel) {
-                                in 1..5 -> "EASY"
-                                in 6..10 -> "MODERATE"
-                                in 11..15 -> "HARD"
-                                else -> "EXPERT"
+                            val titleText = when (gameMode) {
+                                GameMode.PVCPU -> "LEVEL $cpuLevel"
+                                GameMode.PVP -> "PASS & PLAY"
+                                GameMode.ONLINE -> "ONLINE"
                             }
                             Text(
-                                text = "LEVEL $cpuLevel",
+                                text = titleText,
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.ExtraBold,
                                 color = Color(0xFFFFB300)
                             )
                             Spacer(modifier = Modifier.height(4.dp))
+                            
+                            val roomCodeStr = viewModel.roomCode.collectAsState().value
+                            val category = when (gameMode) {
+                                GameMode.PVCPU -> when (cpuLevel) {
+                                    in 1..5 -> "EASY"
+                                    in 6..10 -> "MODERATE"
+                                    in 11..15 -> "HARD"
+                                    else -> "EXPERT"
+                                }
+                                GameMode.PVP -> "LOCAL"
+                                GameMode.ONLINE -> if (roomCodeStr != null) "ROOM $roomCodeStr" else "MULTIPLAYER"
+                            }
                             Surface(
                                 shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
                                 color = Color(0xFF4CAF50),
@@ -367,7 +378,6 @@ fun MainScreen(viewModel: ChessViewModel, onBack: () -> Unit) {
             val endReason by viewModel.endReason.collectAsState()
             val rematchRequestedBy by viewModel.rematchRequestedBy.collectAsState()
             val drawOfferedBy by viewModel.drawOfferedBy.collectAsState()
-            val currentUserId = viewModel.roomCode.value // We just need something to trigger recomposition, wait we can just check if not null
 
             if (drawOfferedBy != null && drawOfferedBy != "handled") {
                 AlertDialog(
@@ -493,11 +503,15 @@ fun MainScreen(viewModel: ChessViewModel, onBack: () -> Unit) {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        val levelText = when (cpuLevel) {
-                            in 1..5 -> "BEGINNER LEVEL"
-                            in 6..10 -> "MODERATE LEVEL"
-                            in 11..15 -> "HARD LEVEL"
-                            else -> "EXPERT LEVEL"
+                        val bottomTagText = when (gameMode) {
+                            GameMode.PVCPU -> when (cpuLevel) {
+                                in 1..5 -> "BEGINNER LEVEL"
+                                in 6..10 -> "MODERATE LEVEL"
+                                in 11..15 -> "HARD LEVEL"
+                                else -> "EXPERT LEVEL"
+                            }
+                            GameMode.PVP -> "PASS & PLAY"
+                            GameMode.ONLINE -> "ONLINE MATCH"
                         }
                         
                         Surface(
@@ -515,7 +529,7 @@ fun MainScreen(viewModel: ChessViewModel, onBack: () -> Unit) {
                                     modifier = Modifier.padding(end = 4.dp)
                                 )
                                 Text(
-                                    text = levelText,
+                                    text = bottomTagText,
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.DarkGray,

@@ -204,7 +204,24 @@ class ChessViewModel : ViewModel() {
                         )
                         
                         if (newWhiteTime == 0L || newBlackTime == 0L) {
-                            _gameState.value = GameState.TIME_OUT 
+                            if (_gameState.value != GameState.TIME_OUT) {
+                                _gameState.value = GameState.TIME_OUT 
+                                val loserColor = if (newWhiteTime == 0L) PieceColor.WHITE else PieceColor.BLACK
+                                val winnerStr = if (loserColor == PieceColor.WHITE) "Black" else "White"
+                                _winner.value = winnerStr
+                                _endReason.value = "Timeout"
+                                
+                                if (_gameMode.value == GameMode.ONLINE && _gameId.value != null && _playerColor.value == loserColor) {
+                                    firebaseManager.firestore.collection("games").document(_gameId.value!!)
+                                        .update(
+                                            mapOf(
+                                                "status" to "finished",
+                                                "reason" to "Timeout",
+                                                "winner" to winnerStr
+                                            )
+                                        )
+                                }
+                            }
                         }
                     }
                 }

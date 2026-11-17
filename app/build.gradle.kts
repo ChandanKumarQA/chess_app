@@ -13,8 +13,8 @@ android {
         applicationId = "com.chessmaster.play"
         minSdk = 24
         targetSdk = 36
-        versionCode = 25
-        versionName = "1.2.8"
+        versionCode = 27
+        versionName = "1.3.0"
     }
 
     buildTypes {
