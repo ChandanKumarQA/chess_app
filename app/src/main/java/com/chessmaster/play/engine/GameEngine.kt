@@ -60,27 +60,14 @@ class GameEngine {
     }
 
     fun isKingInCheck(boardState: BoardState, color: PieceColor): Boolean {
-        var kingSquare: Square? = null
-        for ((sq, p) in boardState.board) {
-            if (p.type == PieceType.KING && p.color == color) {
-                kingSquare = sq
-                break
-            }
-        }
-        if (kingSquare == null) return false // Should not happen in real games
-
-        val oppositeColor = color.opposite()
-        for ((sq, p) in boardState.board) {
-            if (p.color == oppositeColor) {
-                // Generate pseudo moves for opponent
-                val pseudoLegalMoves = generatePseudoLegalMoves(boardState, sq, oppositeColor, checkCastling = false)
-                if (pseudoLegalMoves.any { it.to == kingSquare }) {
-                    return true
-                }
-            }
-        }
-        return false
+        val kingSquare = boardState.board.entries
+            .firstOrNull { it.value.type == PieceType.KING && it.value.color == color }?.key
+            ?: return false
+        return isSquareAttacked(boardState, kingSquare, color)
     }
+
+    fun isCheckmate(boardState: BoardState, color: PieceColor): Boolean =
+        isKingInCheck(boardState, color) && getAllLegalMoves(boardState, color).isEmpty()
 
     private fun generatePseudoLegalMoves(boardState: BoardState, square: Square, color: PieceColor, checkCastling: Boolean = true): List<Move> {
         val piece = boardState.getPiece(square) ?: return emptyList()
@@ -180,13 +167,13 @@ class GameEngine {
 
             if (!kingMoved) {
                 // Kingside
-                if (!ksRookMoved && boardState.getPiece(Square(5, rank)) == null && boardState.getPiece(Square(6, rank)) == null) {
+                if (!ksRookMoved && boardState.getPiece(Square(7, rank))?.let { it.type == PieceType.ROOK && it.color == color } == true && boardState.getPiece(Square(5, rank)) == null && boardState.getPiece(Square(6, rank)) == null) {
                     if (!isSquareAttacked(boardState, Square(5, rank), color) && !isSquareAttacked(boardState, Square(6, rank), color)) {
                         moves.add(Move(piece, square, Square(6, rank), isCastling = true))
                     }
                 }
                 // Queenside
-                if (!qsRookMoved && boardState.getPiece(Square(3, rank)) == null && boardState.getPiece(Square(2, rank)) == null && boardState.getPiece(Square(1, rank)) == null) {
+                if (!qsRookMoved && boardState.getPiece(Square(0, rank))?.let { it.type == PieceType.ROOK && it.color == color } == true && boardState.getPiece(Square(3, rank)) == null && boardState.getPiece(Square(2, rank)) == null && boardState.getPiece(Square(1, rank)) == null) {
                     if (!isSquareAttacked(boardState, Square(3, rank), color) && !isSquareAttacked(boardState, Square(2, rank), color)) {
                         moves.add(Move(piece, square, Square(2, rank), isCastling = true))
                     }
@@ -196,14 +183,17 @@ class GameEngine {
         return moves
     }
 
+    // True if `square` is attacked by the side opposite to `color`.
+    // Pawns attack diagonally only (even onto empty squares) and never "attack" by pushing forward.
     private fun isSquareAttacked(boardState: BoardState, square: Square, color: PieceColor): Boolean {
-        val oppositeColor = color.opposite()
+        val attacker = color.opposite()
         for ((sq, p) in boardState.board) {
-            if (p.color == oppositeColor) {
-                val pseudoLegalMoves = generatePseudoLegalMoves(boardState, sq, oppositeColor, checkCastling = false)
-                if (pseudoLegalMoves.any { it.to == square }) {
-                    return true
-                }
+            if (p.color != attacker) continue
+            if (p.type == PieceType.PAWN) {
+                val dir = if (attacker == PieceColor.WHITE) 1 else -1
+                if (sq.rank + dir == square.rank && abs(sq.file - square.file) == 1) return true
+            } else if (generatePseudoLegalMoves(boardState, sq, attacker, checkCastling = false).any { it.to == square }) {
+                return true
             }
         }
         return false

@@ -224,7 +224,7 @@ fun PuzzlesScreen(
                         onPlayPuzzle()
                     },
                     onPlayCurrentLevel = {
-                        PuzzleRepository.currentPuzzleLevel = highestUnlockedLevel
+                        PuzzleRepository.currentPuzzleLevel = highestUnlockedLevel.coerceAtMost(LocalLeaderboardManager.MAX_PUZZLE_LEVEL)
                         onPlayPuzzle()
                     },
                     onToggleGridView = { isGridView = true },

@@ -75,12 +75,31 @@ object LocalLeaderboardManager {
         return getPrefs(context).getInt(PUZZLE_HIGHEST_LEVEL, 1)
     }
 
+    const val MAX_PUZZLE_LEVEL = 100
+
+    // Highest value is MAX_PUZZLE_LEVEL + 1 ("all levels completed"), never beyond.
     fun unlockNextPuzzleLevel(context: Context, currentLevel: Int) {
         val prefs = getPrefs(context)
         val highest = getHighestUnlockedPuzzleLevel(context)
         if (currentLevel >= highest) {
-            prefs.edit().putInt(PUZZLE_HIGHEST_LEVEL, currentLevel + 1).commit()
+            prefs.edit().putInt(PUZZLE_HIGHEST_LEVEL, (currentLevel + 1).coerceAtMost(MAX_PUZZLE_LEVEL + 1)).commit()
         }
+    }
+
+    /**
+     * Gives XP + coins for a puzzle only the FIRST time it is solved (no farming by replaying).
+     * Returns true if the reward was granted now.
+     */
+    fun claimPuzzleReward(context: Context, puzzleId: String, xp: Int, coins: Int): Boolean {
+        val prefs = getPrefs(context)
+        val key = "puzzle_rewarded_$puzzleId"
+        if (prefs.getBoolean(key, false)) return false
+        prefs.edit()
+            .putBoolean(key, true)
+            .putInt(TOTAL_COINS, prefs.getInt(TOTAL_COINS, 0) + coins)
+            .putInt(TOTAL_XP, prefs.getInt(TOTAL_XP, 0) + xp)
+            .apply()
+        return true
     }
 
     fun getHighestUnlockedThemeLevel(context: Context, theme: String): Int {

@@ -46,10 +46,22 @@ import com.chessmaster.play.ui.components.coach.CoachAvatar
 import com.chessmaster.play.ui.components.coach.CoachSpeechBubble
 import com.chessmaster.play.ui.components.coach.CoachVoiceManager
 import com.chessmaster.play.ui.components.coach.PuzzleHintGenerator
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
+
+private fun puzzlePromoChar(t: PieceType?): String = when (t) {
+    PieceType.QUEEN -> "q"
+    PieceType.ROOK -> "r"
+    PieceType.BISHOP -> "b"
+    PieceType.KNIGHT -> "n"
+    else -> ""
+}
+
+/** UCI string of a move, e.g. "e2e4" or "b7b8q". */
+private fun Move.toUci(): String = "$from$to${puzzlePromoChar(promotionTo)}"
 
 enum class PuzzleDialogState {
     START, PLAYING, WON, LOST
@@ -59,7 +71,8 @@ data class PuzzleHistoryStep(
     val boardState: BoardState,
     val currentTurn: PieceColor,
     val lastMove: Move?,
-    val solutionIndex: Int
+    val solutionIndex: Int,
+    val wrong: Boolean = false
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -107,6 +120,17 @@ fun PuzzleGameScreen(onBack: () -> Unit) {
     var hintMove by remember { mutableStateOf<Move?>(null) }
     var showShopDialog by remember { mutableStateOf(false) }
     var elapsedTime by remember { mutableIntStateOf(0) }
+    var inputLocked by remember { mutableStateOf(false) }          // opponent reply / wrong-move animation running
+    var totalXp by remember { mutableIntStateOf(com.chessmaster.play.data.LocalLeaderboardManager.getTotalXp(context)) }
+    var rewardXp by remember { mutableIntStateOf(0) }
+    var rewardCoins by remember { mutableIntStateOf(0) }
+    val pendingJob = remember { arrayOfNulls<Job>(1) }
+
+    fun cancelPending() {
+        pendingJob[0]?.cancel()
+        pendingJob[0] = null
+        inputLocked = false
+    }
 
     // Undo / Redo Move History
     val history = remember { mutableStateListOf<PuzzleHistoryStep>() }
@@ -134,6 +158,9 @@ fun PuzzleGameScreen(onBack: () -> Unit) {
     val initialTurn = remember { mutableStateOf(PieceColor.WHITE) }
 
     fun loadPuzzle() {
+        cancelPending()
+        rewardXp = 0
+        rewardCoins = 0
         val (state, activeColor) = NotationParser.fenToBoardState(puzzle.fen)
         boardState = state
         currentTurn = activeColor
@@ -158,67 +185,69 @@ fun PuzzleGameScreen(onBack: () -> Unit) {
         loadPuzzle()
     }
 
-    // Undo action
     val canUndo = history.size > 1 && dialogState != PuzzleDialogState.WON
-    fun undoMove() {
-        if (canUndo) {
-            val popped = history.removeAt(history.lastIndex)
-            redoStack.add(popped)
-            val prev = history.last()
-            boardState = prev.boardState
-            currentTurn = prev.currentTurn
-            lastMove = prev.lastMove
-            solutionIndex = prev.solutionIndex
-            selectedSquare = null
-            legalMoves = emptyList()
-            hintMove = null
-            coachBubbleVisible = false
-            voiceManager.stop()
-            if (dialogState == PuzzleDialogState.LOST) {
-                dialogState = PuzzleDialogState.PLAYING
-            }
-        }
-    }
-
-    // Redo action
     val canRedo = redoStack.isNotEmpty() && dialogState != PuzzleDialogState.WON
-    fun redoMove() {
-        if (canRedo) {
-            val nextStep = redoStack.removeAt(redoStack.lastIndex)
-            history.add(nextStep)
-            boardState = nextStep.boardState
-            currentTurn = nextStep.currentTurn
-            lastMove = nextStep.lastMove
-            solutionIndex = nextStep.solutionIndex
-            selectedSquare = null
-            legalMoves = emptyList()
-            hintMove = null
-            coachBubbleVisible = false
-            voiceManager.stop()
-        }
+
+    fun restoreFromHistory() {
+        val step = history.last()
+        boardState = step.boardState
+        currentTurn = step.currentTurn
+        lastMove = step.lastMove
+        solutionIndex = step.solutionIndex
+        selectedSquare = null
+        legalMoves = emptyList()
+        hintMove = null
+        coachBubbleVisible = false
+        voiceManager.stop()
     }
 
-    val handlePuzzleWon = {
+    // Undo always rewinds to the PLAYER's turn (a full "my move + opponent reply" pair),
+    // so the player can never end up controlling the opponent's pieces.
+    fun undoMove() {
+        if (history.size <= 1 || dialogState == PuzzleDialogState.WON) return
+        cancelPending()
+        do {
+            val popped = history.removeAt(history.lastIndex)
+            if (!popped.wrong) redoStack.add(popped)
+        } while (history.size > 1 && history.last().currentTurn != initialTurn.value)
+        restoreFromHistory()
+        if (dialogState == PuzzleDialogState.LOST) dialogState = PuzzleDialogState.PLAYING
+    }
+
+    fun redoMove() {
+        if (redoStack.isEmpty() || dialogState == PuzzleDialogState.WON) return
+        cancelPending()
+        do {
+            history.add(redoStack.removeAt(redoStack.lastIndex))
+        } while (redoStack.isNotEmpty() && history.last().currentTurn != initialTurn.value)
+        restoreFromHistory()
+    }
+
+    fun handlePuzzleWon() {
+        cancelPending()
         dialogState = PuzzleDialogState.WON
+        val ctx = context
         if (isCustomPuzzle) {
             val category = (PuzzleRepository.currentTacticalCategory ?: puzzle.theme.substringBefore(" -")).trim()
             val allInCategory = PuzzleRepository.getPuzzlesByCategory(category)
             val index = allInCategory.indexOfFirst { it.id == puzzle.id }
             val currentLevelNum = if (index >= 0) index + 1 else 1
-            com.chessmaster.play.data.LocalLeaderboardManager.unlockNextThemeLevel(context, category, currentLevelNum)
+            com.chessmaster.play.data.LocalLeaderboardManager.unlockNextThemeLevel(ctx, category, currentLevelNum)
         } else {
-            com.chessmaster.play.data.LocalLeaderboardManager.unlockNextPuzzleLevel(context, level)
+            com.chessmaster.play.data.LocalLeaderboardManager.unlockNextPuzzleLevel(ctx, level)
         }
+        // XP + coins (first solve only)
+        val granted = com.chessmaster.play.data.LocalLeaderboardManager.claimPuzzleReward(
+            ctx, puzzle.id, puzzle.xpReward, puzzle.coinsReward
+        )
+        rewardXp = if (granted) puzzle.xpReward else 0
+        rewardCoins = if (granted) puzzle.coinsReward else 0
+        totalXp = com.chessmaster.play.data.LocalLeaderboardManager.getTotalXp(ctx)
     }
 
     if (boardState == null) return
 
-    val totalXp = remember(level) {
-        com.chessmaster.play.data.LocalLeaderboardManager.getTotalXp(context)
-    }
-    val formattedXp = remember(totalXp) {
-        NumberFormat.getNumberInstance(Locale.US).format(totalXp)
-    }
+    val formattedXp = NumberFormat.getNumberInstance(Locale.US).format(totalXp)
 
     Box(modifier = Modifier.fillMaxSize().background(Color(0xFF141414))) {
         // Exit Confirmation Dialog
@@ -301,124 +330,110 @@ fun PuzzleGameScreen(onBack: () -> Unit) {
                     hintMove = hintMove,
                     isCheck = engine.isKingInCheck(boardState!!, currentTurn),
                     currentTurn = currentTurn,
-                    onSquareClicked = { square ->
-                        if (dialogState != PuzzleDialogState.PLAYING && dialogState != PuzzleDialogState.LOST) return@ChessBoard
-
+                    onSquareClicked = onSquareClicked@{ square ->
+                        if (dialogState != PuzzleDialogState.PLAYING || inputLocked) return@onSquareClicked
+                        val currentBoard = boardState ?: return@onSquareClicked
                         hintMove = null
 
-                        val piece = boardState!!.getPiece(square)
+                        val piece = currentBoard.getPiece(square)
                         if (selectedSquare == null) {
                             if (piece != null && piece.color == currentTurn) {
                                 selectedSquare = square
-                                legalMoves = engine.getLegalMoves(boardState!!, square)
+                                legalMoves = engine.getLegalMoves(currentBoard, square)
                             }
-                        } else {
-                            val expectedMoveStr = puzzle.solutionMoves.getOrNull(solutionIndex)
-                            // Find the move that matches the expected promotion if any, otherwise default to Queen
-                            val move = legalMoves.find {
-                                val promoChar = when (it.promotionTo) {
-                                    PieceType.QUEEN -> "q"
-                                    PieceType.ROOK -> "r"
-                                    PieceType.BISHOP -> "b"
-                                    PieceType.KNIGHT -> "n"
-                                    else -> ""
-                                }
-                                val attempt = "${it.from}${it.to}$promoChar"
-                                it.to == square && attempt == expectedMoveStr
-                            } ?: legalMoves.find { 
-                                it.to == square && (it.promotionTo == null || it.promotionTo == PieceType.QUEEN) 
-                            } ?: legalMoves.find { it.to == square }
+                            return@onSquareClicked
+                        }
 
-                            if (move != null) {
-                                val promoChar = when (move.promotionTo) {
-                                    PieceType.QUEEN -> "q"
-                                    PieceType.ROOK -> "r"
-                                    PieceType.BISHOP -> "b"
-                                    PieceType.KNIGHT -> "n"
-                                    else -> ""
-                                }
-                                val attemptedMoveStr = "${move.from}${move.to}$promoChar"
+                        val expectedMoveStr = puzzle.solutionMoves.getOrNull(solutionIndex)
+                        val candidates = legalMoves.filter { it.to == square }
+                        // Prefer the exact expected move (handles under-promotion), otherwise auto-queen.
+                        val move = candidates.find { it.toUci() == expectedMoveStr }
+                            ?: candidates.find { it.promotionTo == null || it.promotionTo == PieceType.QUEEN }
+                            ?: candidates.firstOrNull()
 
-                                // If expectedMoveStr is 5 chars (promotion) and attempted matches it, or if it matches by start, we accept it.
-                                if (expectedMoveStr == attemptedMoveStr || (expectedMoveStr != null && expectedMoveStr.startsWith("${move.from}${move.to}"))) {
-                                    // Correct Move!
-                                    coachBubbleVisible = false
-                                    voiceManager.stop()
-
-                                    val nextState = boardState!!.copyWithMove(move)
-                                    boardState = nextState
-                                    lastMove = move
-                                    currentTurn = currentTurn.opposite()
-                                    selectedSquare = null
-                                    legalMoves = emptyList()
-                                    val nextSolutionIndex = solutionIndex + 1
-                                    solutionIndex = nextSolutionIndex
-
-                                    // Push to history, clear redo
-                                    redoStack.clear()
-                                    history.add(PuzzleHistoryStep(nextState, currentTurn, move, nextSolutionIndex))
-
-                                    if (nextSolutionIndex >= puzzle.solutionMoves.size) {
-                                        handlePuzzleWon()
-                                    } else {
-                                        // Opponent Counter Move
-                                        val oppMoveStr = puzzle.solutionMoves[nextSolutionIndex]
-                                        val fromSq = Square(oppMoveStr[0] - 'a', oppMoveStr[1] - '1')
-                                        val toSq = Square(oppMoveStr[2] - 'a', oppMoveStr[3] - '1')
-
-                                        coroutineScope.launch {
-                                            delay(500)
-                                            val oppMoves = engine.getLegalMoves(boardState!!, fromSq)
-                                            val actualOppMove = oppMoves.find { it.to == toSq }
-                                            if (actualOppMove != null) {
-                                                val stateAfterOpp = boardState!!.copyWithMove(actualOppMove)
-                                                boardState = stateAfterOpp
-                                                lastMove = actualOppMove
-                                                currentTurn = currentTurn.opposite()
-                                                val finalSolutionIndex = nextSolutionIndex + 1
-                                                solutionIndex = finalSolutionIndex
-
-                                                history.add(PuzzleHistoryStep(stateAfterOpp, currentTurn, actualOppMove, finalSolutionIndex))
-
-                                                if (finalSolutionIndex >= puzzle.solutionMoves.size) {
-                                                    handlePuzzleWon()
-                                                }
-                                            }
-                                        }
-                                    }
-                                } else {
-                                    // Wrong Move!
-                                    val nextState = boardState!!.copyWithMove(move)
-                                    boardState = nextState
-                                    lastMove = move
-                                    selectedSquare = null
-                                    legalMoves = emptyList()
-
-                                    redoStack.clear()
-                                    history.add(PuzzleHistoryStep(nextState, currentTurn, move, solutionIndex))
-
-                                    // Coach voice & speech bubble reaction
-                                    coachBubbleTitle = "Try Again"
-                                    coachBubbleMessage = "That's not the right move. Use Back to undo and find a stronger move!"
-                                    coachBubbleIsError = true
-                                    coachBubbleVisible = true
-
-                                    // Female coach speaks the wrong move advice out loud!
-                                    voiceManager.speakWrongMove()
-
-                                    coroutineScope.launch {
-                                        delay(1200)
-                                        if (dialogState == PuzzleDialogState.PLAYING) {
-                                            dialogState = PuzzleDialogState.LOST
-                                        }
-                                    }
-                                }
-                            } else if (piece != null && piece.color == currentTurn) {
+                        if (move == null) {
+                            if (piece != null && piece.color == currentTurn) {
                                 selectedSquare = square
-                                legalMoves = engine.getLegalMoves(boardState!!, square)
+                                legalMoves = engine.getLegalMoves(currentBoard, square)
                             } else {
                                 selectedSquare = null
                                 legalMoves = emptyList()
+                            }
+                            return@onSquareClicked
+                        }
+
+                        val mover = currentTurn
+                        val opponent = mover.opposite()
+                        val nextState = currentBoard.copyWithMove(move)
+                        val isExpected = expectedMoveStr != null && move.toUci() == expectedMoveStr
+                        // Any other checkmating move is also a valid solution (e.g. several mates in 1).
+                        val deliversMate = !isExpected && engine.isCheckmate(nextState, opponent)
+                        selectedSquare = null
+                        legalMoves = emptyList()
+
+                        if (isExpected || deliversMate) {
+                            coachBubbleVisible = false
+                            voiceManager.stop()
+
+                            boardState = nextState
+                            lastMove = move
+                            currentTurn = opponent
+                            val nextIdx = if (deliversMate) puzzle.solutionMoves.size else solutionIndex + 1
+                            solutionIndex = nextIdx
+                            redoStack.clear()
+                            history.add(PuzzleHistoryStep(nextState, opponent, move, nextIdx))
+
+                            if (nextIdx >= puzzle.solutionMoves.size) {
+                                handlePuzzleWon()
+                                return@onSquareClicked
+                            }
+
+                            // Opponent's scripted reply (input is locked meanwhile, cancelled on undo/restart/exit)
+                            val oppStr = puzzle.solutionMoves[nextIdx]
+                            inputLocked = true
+                            pendingJob[0]?.cancel()
+                            pendingJob[0] = coroutineScope.launch {
+                                delay(500)
+                                val oppFrom = Square(oppStr[0] - 'a', oppStr[1] - '1')
+                                val oppTo = Square(oppStr[2] - 'a', oppStr[3] - '1')
+                                val oppOptions = engine.getLegalMoves(nextState, oppFrom)
+                                // match promotion piece too, not just the target square
+                                val oppMove = oppOptions.find { it.to == oppTo && it.toUci() == oppStr }
+                                    ?: oppOptions.find { it.to == oppTo }
+                                if (oppMove != null) {
+                                    val after = nextState.copyWithMove(oppMove)
+                                    boardState = after
+                                    lastMove = oppMove
+                                    currentTurn = mover
+                                    val finalIdx = nextIdx + 1
+                                    solutionIndex = finalIdx
+                                    history.add(PuzzleHistoryStep(after, mover, oppMove, finalIdx))
+                                    inputLocked = false
+                                    if (finalIdx >= puzzle.solutionMoves.size) handlePuzzleWon()
+                                } else {
+                                    inputLocked = false
+                                }
+                            }
+                        } else {
+                            // Wrong move: show it, lock the board, then open the "try again" dialog.
+                            boardState = nextState
+                            lastMove = move
+                            currentTurn = opponent
+                            redoStack.clear()
+                            history.add(PuzzleHistoryStep(nextState, opponent, move, solutionIndex, wrong = true))
+
+                            coachBubbleTitle = "Try Again"
+                            coachBubbleMessage = "That's not the right move. Use Back to undo and find a stronger move!"
+                            coachBubbleIsError = true
+                            coachBubbleVisible = true
+                            voiceManager.speakWrongMove()
+
+                            inputLocked = true
+                            pendingJob[0]?.cancel()
+                            pendingJob[0] = coroutineScope.launch {
+                                delay(1200)
+                                inputLocked = false
+                                if (dialogState == PuzzleDialogState.PLAYING) dialogState = PuzzleDialogState.LOST
                             }
                         }
                     }
@@ -445,7 +460,8 @@ fun PuzzleGameScreen(onBack: () -> Unit) {
                 remainingHints = remainingHints,
                 canUndo = canUndo,
                 canRedo = canRedo,
-                onHint = {
+                onHint = onHint@{
+                    if (inputLocked || dialogState != PuzzleDialogState.PLAYING) return@onHint
                     if (remainingHints > 0) {
                         val expectedMoveStr = puzzle.solutionMoves.getOrNull(solutionIndex)
                         if (expectedMoveStr != null) {
@@ -512,6 +528,8 @@ fun PuzzleGameScreen(onBack: () -> Unit) {
         if (dialogState == PuzzleDialogState.WON) {
             WonDialog(
                 elapsedTime = elapsedTime,
+                rewardXp = rewardXp,
+                rewardCoins = rewardCoins,
                 onNextLevel = {
                     val proceed = {
                         if (isCustomPuzzle) {
@@ -538,10 +556,16 @@ fun PuzzleGameScreen(onBack: () -> Unit) {
                             }
                         } else {
                             com.chessmaster.play.data.LocalLeaderboardManager.unlockNextPuzzleLevel(context, level)
-                            level++
-                            PuzzleRepository.currentPuzzleLevel = level
-                            puzzle = PuzzleRepository.getPuzzleForLevel(level)
-                            dialogState = PuzzleDialogState.PLAYING
+                            if (level >= PuzzleRepository.levelPuzzles.size) {
+                                Toast.makeText(context, "🏆 All levels completed!", Toast.LENGTH_LONG).show()
+                                PuzzleRepository.activePlayPuzzle = null
+                                onBack()
+                            } else {
+                                level++
+                                PuzzleRepository.currentPuzzleLevel = level
+                                puzzle = PuzzleRepository.getPuzzleForLevel(level)
+                                dialogState = PuzzleDialogState.PLAYING
+                            }
                         }
                     }
                     PuzzleRepository.puzzlesSolvedSinceAd++
@@ -951,12 +975,19 @@ fun StartDialog(
 }
 
 @Composable
-fun WonDialog(elapsedTime: Int, onNextLevel: () -> Unit, onRestart: () -> Unit) {
+fun WonDialog(
+    elapsedTime: Int,
+    rewardXp: Int,
+    rewardCoins: Int,
+    onNextLevel: () -> Unit,
+    onRestart: () -> Unit
+) {
     val timeString = String.format(Locale.US, "%02d:%02d", elapsedTime / 60, elapsedTime % 60)
+    val rewardLine = if (rewardXp > 0 || rewardCoins > 0) "\n⭐ +$rewardXp XP   🪙 +$rewardCoins Coins" else "\nAlready solved before – no extra reward"
     ResultDialog(
         title = "🎉 Puzzle Solved!",
         titleColor = Color(0xFFFFD700),
-        subtitle = "⏱ Time Taken: $timeString",
+        subtitle = "⏱ Time Taken: $timeString$rewardLine",
         primaryButtonText = "▶ NEXT PUZZLE",
         primaryButtonColor = Color(0xFF00C853),
         onPrimaryAction = onNextLevel,
