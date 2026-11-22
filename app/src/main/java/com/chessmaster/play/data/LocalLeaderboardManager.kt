@@ -116,6 +116,53 @@ object LocalLeaderboardManager {
         }
     }
 
+    // ---------- Daily puzzle + streak ----------
+    private const val STREAK_LAST_DAY = "streak_last_day"
+    private const val STREAK_COUNT = "streak_count"
+    private const val STREAK_BEST = "streak_best"
+    private const val DAILY_SOLVED_DAY = "daily_solved_day"
+
+    /** Days since 1970 in the device's local time zone. */
+    fun todayEpochDay(): Int {
+        val now = System.currentTimeMillis()
+        val offset = java.util.TimeZone.getDefault().getOffset(now)
+        return Math.floorDiv(now + offset, 86_400_000L).toInt()
+    }
+
+    /** Current streak; 0 if the player missed yesterday. */
+    fun getCurrentStreak(context: Context): Int {
+        val prefs = getPrefs(context)
+        val last = prefs.getInt(STREAK_LAST_DAY, -1)
+        return if (last >= todayEpochDay() - 1) prefs.getInt(STREAK_COUNT, 0) else 0
+    }
+
+    fun getBestStreak(context: Context): Int = getPrefs(context).getInt(STREAK_BEST, 0)
+
+    /** Call when the player solves any puzzle. Returns the updated streak (days in a row). */
+    fun recordPuzzleDay(context: Context): Int {
+        val prefs = getPrefs(context)
+        val today = todayEpochDay()
+        val last = prefs.getInt(STREAK_LAST_DAY, -1)
+        if (last == today) return prefs.getInt(STREAK_COUNT, 1)
+        val streak = if (last == today - 1) prefs.getInt(STREAK_COUNT, 0) + 1 else 1
+        prefs.edit()
+            .putInt(STREAK_LAST_DAY, today)
+            .putInt(STREAK_COUNT, streak)
+            .putInt(STREAK_BEST, maxOf(streak, prefs.getInt(STREAK_BEST, 0)))
+            .apply()
+        return streak
+    }
+
+    fun isDailySolvedToday(context: Context): Boolean =
+        getPrefs(context).getInt(DAILY_SOLVED_DAY, -1) == todayEpochDay()
+
+    /** Returns true only the first time today's daily puzzle is solved. */
+    fun markDailySolved(context: Context): Boolean {
+        if (isDailySolvedToday(context)) return false
+        getPrefs(context).edit().putInt(DAILY_SOLVED_DAY, todayEpochDay()).apply()
+        return true
+    }
+
     fun getRemainingHints(context: Context): Int = getPrefs(context).getInt(REMAINING_HINTS, 10)
     
     fun setRemainingHints(context: Context, hints: Int) {

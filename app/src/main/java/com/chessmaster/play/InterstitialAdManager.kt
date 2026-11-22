@@ -16,14 +16,14 @@ class InterstitialAdManager(private val context: Context) {
 
     // Using Google's test ad unit ID during development
     // private val adUnitId = "ca-app-pub-3940256099942544/1033173712"
-    private val adUnitId = "ca-app-pub-8940048544519183/3260528972" // REAL ID
+    private val adUnitId = AdIds.interstitial(context) // test ID in debug, real ID in release
 
     init {
         loadAd()
     }
 
     private fun loadAd() {
-        if (interstitialAd != null || isAdLoading) {
+        if (interstitialAd != null || isAdLoading || !ConsentManager.canRequestAds(context)) {
             return
         }
 

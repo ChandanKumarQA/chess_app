@@ -49,7 +49,7 @@ private class AdViewHolder {
 @Composable
 fun BannerAd(
     modifier: Modifier = Modifier,
-    adMobUnitId: String = DEFAULT_ADMOB_BANNER_ID,
+    adMobUnitId: String = com.chessmaster.play.AdIds.banner(androidx.compose.ui.platform.LocalContext.current),
     gamUnitId: String = DEFAULT_GAM_BANNER_ID,
     adSizes: List<AdSize> = DEFAULT_BANNER_SIZES
 ) {
@@ -117,6 +117,7 @@ fun BannerAd(
                 }
 
                 fun loadAdMob() {
+                    if (!com.chessmaster.play.ConsentManager.canRequestAds(ctx)) return
                     Log.d(TAG, "Initiating AdMob banner load: $adMobUnitId")
                     val adMobSize = when {
                         adSizes.contains(AdSize.BANNER) -> AdSize.BANNER
@@ -162,7 +163,7 @@ fun BannerAd(
 @Composable
 fun MediumRectangleAd(
     modifier: Modifier = Modifier,
-    adMobUnitId: String = DEFAULT_ADMOB_BANNER_ID,
+    adMobUnitId: String = com.chessmaster.play.AdIds.banner(androidx.compose.ui.platform.LocalContext.current),
     gamUnitId: String = DEFAULT_GAM_BANNER_ID
 ) {
     BannerAd(

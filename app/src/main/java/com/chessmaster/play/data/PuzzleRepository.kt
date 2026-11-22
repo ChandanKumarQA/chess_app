@@ -11,10 +11,17 @@ object PuzzleRepository {
     var currentPuzzleLevel: Int = 1
     var currentTacticalCategory: String? = null
     var puzzlesSolvedSinceAd: Int = 0
+    /** Set to true right before opening PuzzleGameScreen with the daily puzzle (read once, then reset). */
+    var dailyMode: Boolean = false
 
     val levelPuzzles: List<Puzzle> get() = LevelPuzzlesDatabase.levelPuzzles
 
-    fun getDailyPuzzle(): Puzzle = LevelPuzzlesDatabase.levelPuzzles.first()
+    // Same puzzle all day, a different one every day (rotates through every tactical theme).
+    fun getDailyPuzzle(): Puzzle {
+        val pool = getAllTacticalCategories().flatMap { getPuzzlesByCategory(it) }
+        val day = LocalLeaderboardManager.todayEpochDay().toLong()
+        return pool[((day * 7919L) % pool.size).toInt()]
+    }
 
     fun getPuzzleForLevel(level: Int): Puzzle = LevelPuzzlesDatabase.getPuzzleForLevel(level)
 

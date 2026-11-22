@@ -46,6 +46,11 @@ class MainActivity : ComponentActivity() {
     super.onCreate(savedInstanceState)
 
     enableEdgeToEdge()
+
+    // Google UMP consent (EEA/UK), then start ads
+    ConsentManager.gatherConsent(this) {
+        (application as? ChessApplication)?.initializeAdsIfAllowed()
+    }
     setContent {
         val viewModel: ChessViewModel = viewModel()
         val learnViewModel: com.chessmaster.play.viewmodel.LearnViewModel = viewModel()

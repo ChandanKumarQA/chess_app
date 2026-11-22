@@ -159,6 +159,25 @@ fun PuzzlesScreen(
                     }
 
                     item {
+                        val dailySolved = LocalLeaderboardManager.isDailySolvedToday(context)
+                        val streak = LocalLeaderboardManager.getCurrentStreak(context)
+                        SpecialModeItem(
+                            icon = Icons.Default.Star,
+                            title = "Daily Puzzle",
+                            subtitle = (if (dailySolved) "✅ Solved today" else "New puzzle every day • +30 XP") +
+                                (if (streak > 0) " • 🔥 $streak" else ""),
+                            iconBgColor = Color(0xFF4E3B00),
+                            iconColor = Color(0xFFFFC107),
+                            onClick = {
+                                PuzzleRepository.activePlayPuzzle = PuzzleRepository.getDailyPuzzle()
+                                PuzzleRepository.currentTacticalCategory = null
+                                PuzzleRepository.dailyMode = true
+                                onPlayPuzzle()
+                            }
+                        )
+                    }
+
+                    item {
                         SpecialModeItem(
                             icon = Icons.Default.Category,
                             title = "Tactical Themes",

@@ -18,16 +18,26 @@ class ChessApplication : Application(), Application.ActivityLifecycleCallbacks, 
         registerActivityLifecycleCallbacks(this)
         
         // Initialize the Google Mobile Ads SDK here
-        MobileAds.initialize(this) {}
-        
         appOpenAdManager = AppOpenAdManager(this)
-        appOpenAdManager.loadAd()
+        // Works right away for returning users whose consent is already stored;
+        // first launch is handled by MainActivity after the consent form.
+        initializeAdsIfAllowed()
 
         // Initialize Board Preferences
         com.chessmaster.play.data.BoardPreferences.init(this)
 
         // Register default lifecycle observer
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
+    }
+
+    private var adsInitialized = false
+
+    /** Initializes the Mobile Ads SDK only once consent allows ad requests. */
+    fun initializeAdsIfAllowed() {
+        if (adsInitialized || !ConsentManager.canRequestAds(this)) return
+        adsInitialized = true
+        MobileAds.initialize(this) {}
+        appOpenAdManager.loadAd()
     }
 
     /** LifecycleObserver method that shows the app open ad when the app moves to foreground. */

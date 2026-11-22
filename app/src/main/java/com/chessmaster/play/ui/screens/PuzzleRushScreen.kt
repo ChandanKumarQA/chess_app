@@ -127,6 +127,7 @@ fun RushGame(minutes: Int, onGameOver: () -> Unit, onBack: () -> Unit) {
     var legalMoves by remember { mutableStateOf<List<Move>>(emptyList()) }
     val engine = remember { GameEngine() }
     val coroutineScope = rememberCoroutineScope()
+    var inputLocked by remember { mutableStateOf(false) }
     
     val adManager = remember { RewardedAdManager(context) }
     var remainingHints by remember { mutableStateOf(LocalLeaderboardManager.getRemainingHints(context)) }
@@ -146,6 +147,7 @@ fun RushGame(minutes: Int, onGameOver: () -> Unit, onBack: () -> Unit) {
             boardState = initialState
             currentTurn = activeColor
             solutionIndex = 0
+            inputLocked = false
             selectedSquare = null
             legalMoves = emptyList()
             currentPuzzleTime = 0
@@ -212,7 +214,7 @@ fun RushGame(minutes: Int, onGameOver: () -> Unit, onBack: () -> Unit) {
                         hintMove = hintMove,
                         onSquareClicked = { square ->
                             if (currentPuzzle == null) return@ChessBoard
-                            if (solutionIndex >= currentPuzzle.solutionMoves.size) return@ChessBoard
+                            if (solutionIndex >= currentPuzzle.solutionMoves.size || inputLocked || showSolvedPopup) return@ChessBoard
                             
                             val piece = boardState!!.getPiece(square)
                             if (selectedSquare == null) {
@@ -221,16 +223,28 @@ fun RushGame(minutes: Int, onGameOver: () -> Unit, onBack: () -> Unit) {
                                     legalMoves = engine.getLegalMoves(boardState!!, square)
                                 }
                             } else {
-                                val move = legalMoves.find { it.to == square }
+                                val pickExpected = currentPuzzle.solutionMoves.getOrNull(solutionIndex)
+                            val candidates = legalMoves.filter { it.to == square }
+                            val move = candidates.find { moveUci(it) == pickExpected }
+                                ?: candidates.find { it.promotionTo == null || it.promotionTo == com.chessmaster.play.model.PieceType.QUEEN }
+                                ?: candidates.firstOrNull()
+                            if (move == null && piece != null && piece.color == currentTurn) {
+                                selectedSquare = square
+                                legalMoves = engine.getLegalMoves(boardState!!, square)
+                                return@ChessBoard
+                            }
                                 if (move != null) {
                                     val expectedStr = currentPuzzle.solutionMoves.getOrNull(solutionIndex)
-                                    val attemptedStr = "${move.from}${move.to}"
+                                    val attemptedStr = moveUci(move)
+                                // any other checkmating move also solves the puzzle
+                                val deliversMate = expectedStr != attemptedStr &&
+                                    engine.isCheckmate(boardState!!.copyWithMove(move), currentTurn.opposite())
                                     
-                                    if (expectedStr == attemptedStr) {
+                                    if (expectedStr == attemptedStr || deliversMate) {
                                         // Correct
                                         boardState = boardState!!.copyWithMove(move)
                                         currentTurn = currentTurn.opposite()
-                                        solutionIndex++
+                                        solutionIndex = if (deliversMate) currentPuzzle.solutionMoves.size else solutionIndex + 1
                                         
                                         if (solutionIndex >= currentPuzzle.solutionMoves.size) {
                                             // Solved
@@ -244,16 +258,22 @@ fun RushGame(minutes: Int, onGameOver: () -> Unit, onBack: () -> Unit) {
                                             val oppStr = currentPuzzle.solutionMoves[solutionIndex]
                                             val fromSq = Square(oppStr[0] - 'a', oppStr[1] - '1')
                                             val toSq = Square(oppStr[2] - 'a', oppStr[3] - '1')
-                                            coroutineScope.launch {
-                                                delay(300)
-                                                val oppMoves = engine.getLegalMoves(boardState!!, fromSq)
-                                                val actualOpp = oppMoves.find { it.to == toSq }
-                                                if (actualOpp != null) {
-                                                    boardState = boardState!!.copyWithMove(actualOpp)
-                                                    currentTurn = currentTurn.opposite()
-                                                    solutionIndex++
-                                                }
+                                            inputLocked = true
+                                        val idxAtLaunch = puzzleIndex
+                                        coroutineScope.launch {
+                                            delay(300)
+                                            // puzzle changed meanwhile -> drop this stale reply
+                                            if (puzzleIndex != idxAtLaunch) return@launch
+                                            val oppMoves = engine.getLegalMoves(boardState!!, fromSq)
+                                            val actualOpp = oppMoves.find { it.to == toSq && moveUci(it) == oppStr }
+                                                ?: oppMoves.find { it.to == toSq }
+                                            if (actualOpp != null) {
+                                                boardState = boardState!!.copyWithMove(actualOpp)
+                                                currentTurn = currentTurn.opposite()
+                                                solutionIndex++
                                             }
+                                            inputLocked = false
+                                        }
                                         }
                                     } else {
                                         // Wrong
@@ -279,7 +299,7 @@ fun RushGame(minutes: Int, onGameOver: () -> Unit, onBack: () -> Unit) {
                         badgeCount = remainingHints,
                         onClick = {
                             if (remainingHints > 0) {
-                                if (currentPuzzle != null && selectedSquare == null) {
+                                if (currentPuzzle != null && selectedSquare == null && !inputLocked) {
                                     val expectedStr = currentPuzzle.solutionMoves.getOrNull(solutionIndex)
                                     if (expectedStr != null) {
                                         val fromSq = Square(expectedStr[0] - 'a', expectedStr[1] - '1')
@@ -387,4 +407,17 @@ fun RushGameOver(onRetry: () -> Unit, onHome: () -> Unit) {
             Text("Home", color = MaterialTheme.colorScheme.onBackground)
         }
     }
+}
+
+
+/** UCI string of a move, e.g. "e2e4" or "b7b8q" (promotion included). */
+private fun moveUci(m: Move): String {
+    val promo = when (m.promotionTo) {
+        com.chessmaster.play.model.PieceType.QUEEN -> "q"
+        com.chessmaster.play.model.PieceType.ROOK -> "r"
+        com.chessmaster.play.model.PieceType.BISHOP -> "b"
+        com.chessmaster.play.model.PieceType.KNIGHT -> "n"
+        else -> ""
+    }
+    return "${m.from}${m.to}$promo"
 }

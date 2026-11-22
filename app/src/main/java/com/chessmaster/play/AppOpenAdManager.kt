@@ -19,10 +19,10 @@ class AppOpenAdManager(private val context: Context) {
     var isShowingAd = false
     private var loadTime: Long = 0
 
-    private val adUnitId = "ca-app-pub-8940048544519183/4566530926"
+    private val adUnitId = AdIds.appOpen(context)
 
     fun loadAd() {
-        if (isLoadingAd || isAdAvailable()) {
+        if (isLoadingAd || isAdAvailable() || !ConsentManager.canRequestAds(context)) {
             return
         }
 

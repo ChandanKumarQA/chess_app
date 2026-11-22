@@ -30,6 +30,10 @@ class RewardedInterstitialAdManager(private val context: Context) {
     }
 
     fun loadAd(onLoaded: ((Boolean) -> Unit)? = null) {
+        if (rewardedInterstitialAd == null && !ConsentManager.canRequestAds(context)) {
+            onLoaded?.invoke(false)
+            return
+        }
         if (rewardedInterstitialAd != null) {
             onLoaded?.invoke(true)
             return
@@ -42,7 +46,7 @@ class RewardedInterstitialAdManager(private val context: Context) {
         val request = AdRequest.Builder().build()
         RewardedInterstitialAd.load(
             context,
-            AD_UNIT_ID,
+            AdIds.rewardedInterstitial(context),
             request,
             object : RewardedInterstitialAdLoadCallback() {
                 override fun onAdLoaded(ad: RewardedInterstitialAd) {

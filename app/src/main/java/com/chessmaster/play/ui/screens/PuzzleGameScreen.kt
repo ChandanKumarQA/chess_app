@@ -81,6 +81,7 @@ fun PuzzleGameScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val activity = context as? Activity
     val isCustomPuzzle = remember { PuzzleRepository.activePlayPuzzle != null }
+    val isDaily = remember { PuzzleRepository.dailyMode.also { PuzzleRepository.dailyMode = false } }
     var level by remember { mutableIntStateOf(if (isCustomPuzzle) 0 else PuzzleRepository.currentPuzzleLevel) }
     var puzzle by remember { mutableStateOf(PuzzleRepository.activePlayPuzzle ?: PuzzleRepository.getPuzzleForLevel(level)) }
 
@@ -124,6 +125,7 @@ fun PuzzleGameScreen(onBack: () -> Unit) {
     var totalXp by remember { mutableIntStateOf(com.chessmaster.play.data.LocalLeaderboardManager.getTotalXp(context)) }
     var rewardXp by remember { mutableIntStateOf(0) }
     var rewardCoins by remember { mutableIntStateOf(0) }
+    var streakDays by remember { mutableIntStateOf(0) }
     val pendingJob = remember { arrayOfNulls<Job>(1) }
 
     fun cancelPending() {
@@ -227,7 +229,9 @@ fun PuzzleGameScreen(onBack: () -> Unit) {
         cancelPending()
         dialogState = PuzzleDialogState.WON
         val ctx = context
-        if (isCustomPuzzle) {
+        if (isDaily) {
+            // daily puzzle: no theme/level unlock
+        } else if (isCustomPuzzle) {
             val category = (PuzzleRepository.currentTacticalCategory ?: puzzle.theme.substringBefore(" -")).trim()
             val allInCategory = PuzzleRepository.getPuzzlesByCategory(category)
             val index = allInCategory.indexOfFirst { it.id == puzzle.id }
@@ -240,8 +244,16 @@ fun PuzzleGameScreen(onBack: () -> Unit) {
         val granted = com.chessmaster.play.data.LocalLeaderboardManager.claimPuzzleReward(
             ctx, puzzle.id, puzzle.xpReward, puzzle.coinsReward
         )
-        rewardXp = if (granted) puzzle.xpReward else 0
-        rewardCoins = if (granted) puzzle.coinsReward else 0
+        var bonusXp = 0
+        var bonusCoins = 0
+        if (isDaily && com.chessmaster.play.data.LocalLeaderboardManager.markDailySolved(ctx)) {
+            bonusXp = 30
+            bonusCoins = 20
+            com.chessmaster.play.data.LocalLeaderboardManager.addRewards(ctx, bonusCoins, bonusXp)
+        }
+        rewardXp = (if (granted) puzzle.xpReward else 0) + bonusXp
+        rewardCoins = (if (granted) puzzle.coinsReward else 0) + bonusCoins
+        streakDays = com.chessmaster.play.data.LocalLeaderboardManager.recordPuzzleDay(ctx)
         totalXp = com.chessmaster.play.data.LocalLeaderboardManager.getTotalXp(ctx)
     }
 
@@ -288,7 +300,7 @@ fun PuzzleGameScreen(onBack: () -> Unit) {
             // Top Bar matching reference screenshot
             PuzzleTopBar(
                 level = displayLevel,
-                title = if (isCustomPuzzle) categoryName else "Puzzles",
+                title = if (isDaily) "Daily Puzzle" else if (isCustomPuzzle) categoryName else "Puzzles",
                 onBack = handleBack,
                 onRestart = {
                     loadPuzzle()
@@ -512,7 +524,7 @@ fun PuzzleGameScreen(onBack: () -> Unit) {
             } else {
                 level
             }
-            val title = if (isCustomPuzzle) "$categoryName #$displayLevel" else "LEVEL $displayLevel"
+            val title = if (isDaily) "DAILY PUZZLE" else if (isCustomPuzzle) "$categoryName #$displayLevel" else "LEVEL $displayLevel"
             StartDialog(
                 title = title,
                 color = initialTurn.value,
@@ -530,9 +542,13 @@ fun PuzzleGameScreen(onBack: () -> Unit) {
                 elapsedTime = elapsedTime,
                 rewardXp = rewardXp,
                 rewardCoins = rewardCoins,
+                streakDays = streakDays,
                 onNextLevel = {
                     val proceed = {
-                        if (isCustomPuzzle) {
+                        if (isDaily) {
+                            PuzzleRepository.activePlayPuzzle = null
+                            onBack()
+                        } else if (isCustomPuzzle) {
                             val category = (PuzzleRepository.currentTacticalCategory ?: puzzle.theme.substringBefore(" -")).trim()
                             val allInCategory = PuzzleRepository.getPuzzlesByCategory(category)
                             val index = allInCategory.indexOfFirst { it.id == puzzle.id }
@@ -979,15 +995,17 @@ fun WonDialog(
     elapsedTime: Int,
     rewardXp: Int,
     rewardCoins: Int,
+    streakDays: Int,
     onNextLevel: () -> Unit,
     onRestart: () -> Unit
 ) {
     val timeString = String.format(Locale.US, "%02d:%02d", elapsedTime / 60, elapsedTime % 60)
+    val streakLine = if (streakDays > 0) "\n🔥 $streakDays day streak" else ""
     val rewardLine = if (rewardXp > 0 || rewardCoins > 0) "\n⭐ +$rewardXp XP   🪙 +$rewardCoins Coins" else "\nAlready solved before – no extra reward"
     ResultDialog(
         title = "🎉 Puzzle Solved!",
         titleColor = Color(0xFFFFD700),
-        subtitle = "⏱ Time Taken: $timeString$rewardLine",
+        subtitle = "⏱ Time Taken: $timeString$rewardLine$streakLine",
         primaryButtonText = "▶ NEXT PUZZLE",
         primaryButtonColor = Color(0xFF00C853),
         onPrimaryAction = onNextLevel,

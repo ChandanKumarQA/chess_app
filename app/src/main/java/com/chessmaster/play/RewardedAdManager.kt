@@ -28,7 +28,7 @@ private const val TAG = "RewardedAdManager"
  */
 class RewardedAdManager(
     private val context: Context,
-    private val adMobAdUnitId: String = DEFAULT_ADMOB_REWARDED_ID,
+    private val adMobAdUnitId: String = AdIds.rewarded(context),
     private val gamAdUnitId: String = DEFAULT_GAM_REWARDED_ID
 ) {
     companion object {
@@ -41,6 +41,10 @@ class RewardedAdManager(
     private val loadCallbacks = mutableListOf<(Boolean) -> Unit>()
 
     fun loadAd(onLoaded: ((Boolean) -> Unit)? = null) {
+        if (rewardedAd == null && !ConsentManager.canRequestAds(context)) {
+            onLoaded?.invoke(false)
+            return
+        }
         if (rewardedAd != null) {
             onLoaded?.invoke(true)
             return
