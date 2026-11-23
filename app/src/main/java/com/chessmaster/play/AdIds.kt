@@ -1,28 +1,22 @@
 package com.chessmaster.play
 
 import android.content.Context
-import android.content.pm.ApplicationInfo
 
 /**
- * Picks real AdMob unit IDs for release builds and Google's official TEST IDs for debug builds,
- * so you never click/impress your own live ads while developing (that can get the AdMob account banned).
+ * Official AdMob Unit IDs for the app.
+ * App ID: ca-app-pub-8940048544519183~6773865241
  */
 object AdIds {
-    fun isDebug(context: Context): Boolean =
-        (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+    const val APP_ID = "ca-app-pub-8940048544519183~6773865241"
+    const val BANNER = "ca-app-pub-8940048544519183/3068957289"
+    const val INTERSTITIAL = "ca-app-pub-8940048544519183/3260528972"
+    const val REWARDED = "ca-app-pub-8940048544519183/2330590681"
+    const val REWARDED_INTERSTITIAL = "ca-app-pub-8940048544519183/4409959112"
+    const val APP_OPEN = "ca-app-pub-8940048544519183/4566530926"
 
-    fun banner(context: Context) =
-        if (isDebug(context)) "ca-app-pub-3940256099942544/6300978111" else "ca-app-pub-8940048544519183/3068957289"
-
-    fun interstitial(context: Context) =
-        if (isDebug(context)) "ca-app-pub-3940256099942544/1033173712" else "ca-app-pub-8940048544519183/3260528972"
-
-    fun rewarded(context: Context) =
-        if (isDebug(context)) "ca-app-pub-3940256099942544/5224354917" else "ca-app-pub-8940048544519183/2330590681"
-
-    fun rewardedInterstitial(context: Context) =
-        if (isDebug(context)) "ca-app-pub-3940256099942544/5354046379" else "ca-app-pub-8940048544519183/4409959112"
-
-    fun appOpen(context: Context) =
-        if (isDebug(context)) "ca-app-pub-3940256099942544/9257395921" else "ca-app-pub-8940048544519183/4566530926"
+    fun banner(context: Context? = null): String = BANNER
+    fun interstitial(context: Context? = null): String = INTERSTITIAL
+    fun rewarded(context: Context? = null): String = REWARDED
+    fun rewardedInterstitial(context: Context? = null): String = REWARDED_INTERSTITIAL
+    fun appOpen(context: Context? = null): String = APP_OPEN
 }

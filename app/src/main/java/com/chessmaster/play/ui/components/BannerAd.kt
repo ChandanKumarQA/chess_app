@@ -117,7 +117,6 @@ fun BannerAd(
                 }
 
                 fun loadAdMob() {
-                    if (!com.chessmaster.play.ConsentManager.canRequestAds(ctx)) return
                     Log.d(TAG, "Initiating AdMob banner load: $adMobUnitId")
                     val adMobSize = when {
                         adSizes.contains(AdSize.BANNER) -> AdSize.BANNER

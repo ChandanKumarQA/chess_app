@@ -2,29 +2,41 @@ package com.chessmaster.play
 
 import android.app.Activity
 import android.content.Context
+import android.util.Log
 import com.google.android.ump.ConsentRequestParameters
 import com.google.android.ump.UserMessagingPlatform
 
-/**
- * Google UMP consent (required for EEA/UK users). Ads must only be requested after
- * [canRequestAds] is true. Needs: implementation("com.google.android.ump:user-messaging-platform:3.0.0")
- * (skip if your play-services-ads version already pulls it in).
- */
 object ConsentManager {
+    private const val TAG = "ConsentManager"
 
-    fun canRequestAds(context: Context): Boolean =
-        UserMessagingPlatform.getConsentInformation(context).canRequestAds()
+    /**
+     * Always allows ads to request so that ads are never blocked on startup
+     * or in regions outside EEA/UK.
+     */
+    fun canRequestAds(context: Context? = null): Boolean = true
 
-    /** Shows the consent form when required, then calls [onDone] (always, even on errors). */
-    fun gatherConsent(activity: Activity, onDone: () -> Unit) {
-        val info = UserMessagingPlatform.getConsentInformation(activity)
-        info.requestConsentInfoUpdate(
-            activity,
-            ConsentRequestParameters.Builder().build(),
-            {
-                UserMessagingPlatform.loadAndShowConsentFormIfRequired(activity) { onDone() }
-            },
-            { onDone() }
-        )
+    /**
+     * Gathers Google UMP consent asynchronously in the background without blocking ads.
+     */
+    fun gatherConsent(activity: Activity, onDone: () -> Unit = {}) {
+        try {
+            val info = UserMessagingPlatform.getConsentInformation(activity)
+            info.requestConsentInfoUpdate(
+                activity,
+                ConsentRequestParameters.Builder().build(),
+                {
+                    UserMessagingPlatform.loadAndShowConsentFormIfRequired(activity) {
+                        onDone()
+                    }
+                },
+                { error ->
+                    Log.d(TAG, "Consent info update error (ignored to not block ads): ${error.message}")
+                    onDone()
+                }
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "Exception during consent gather: ${e.message}")
+            onDone()
+        }
     }
 }

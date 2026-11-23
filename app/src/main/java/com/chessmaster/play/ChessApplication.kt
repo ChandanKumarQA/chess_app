@@ -17,11 +17,13 @@ class ChessApplication : Application(), Application.ActivityLifecycleCallbacks, 
         super<Application>.onCreate()
         registerActivityLifecycleCallbacks(this)
         
-        // Initialize the Google Mobile Ads SDK here
+        // Initialize the Google Mobile Ads SDK immediately on app launch
+        MobileAds.initialize(this) { initializationStatus ->
+            android.util.Log.d("ChessApplication", "MobileAds initialized: $initializationStatus")
+        }
+        
         appOpenAdManager = AppOpenAdManager(this)
-        // Works right away for returning users whose consent is already stored;
-        // first launch is handled by MainActivity after the consent form.
-        initializeAdsIfAllowed()
+        appOpenAdManager.loadAd()
 
         // Initialize Board Preferences
         com.chessmaster.play.data.BoardPreferences.init(this)

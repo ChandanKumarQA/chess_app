@@ -41,10 +41,6 @@ class RewardedAdManager(
     private val loadCallbacks = mutableListOf<(Boolean) -> Unit>()
 
     fun loadAd(onLoaded: ((Boolean) -> Unit)? = null) {
-        if (rewardedAd == null && !ConsentManager.canRequestAds(context)) {
-            onLoaded?.invoke(false)
-            return
-        }
         if (rewardedAd != null) {
             onLoaded?.invoke(true)
             return

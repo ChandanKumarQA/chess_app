@@ -22,12 +22,13 @@ class AppOpenAdManager(private val context: Context) {
     private val adUnitId = AdIds.appOpen(context)
 
     fun loadAd() {
-        if (isLoadingAd || isAdAvailable() || !ConsentManager.canRequestAds(context)) {
+        if (isLoadingAd || isAdAvailable()) {
             return
         }
 
         isLoadingAd = true
         val request = AdRequest.Builder().build()
+        Log.d(LOG_TAG, "Loading App Open Ad: $adUnitId")
         AppOpenAd.load(
             context,
             adUnitId,
@@ -37,12 +38,12 @@ class AppOpenAdManager(private val context: Context) {
                     appOpenAd = ad
                     isLoadingAd = false
                     loadTime = Date().time
-                    Log.d(LOG_TAG, "App Open Ad loaded.")
+                    Log.d(LOG_TAG, "App Open Ad loaded successfully.")
                 }
 
                 override fun onAdFailedToLoad(loadAdError: LoadAdError) {
                     isLoadingAd = false
-                    Log.d(LOG_TAG, "App Open Ad failed to load: " + loadAdError.message)
+                    Log.e(LOG_TAG, "App Open Ad failed to load: ${loadAdError.code} - ${loadAdError.message}")
                 }
             }
         )

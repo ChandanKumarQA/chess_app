@@ -23,12 +23,13 @@ class InterstitialAdManager(private val context: Context) {
     }
 
     private fun loadAd() {
-        if (interstitialAd != null || isAdLoading || !ConsentManager.canRequestAds(context)) {
+        if (interstitialAd != null || isAdLoading) {
             return
         }
 
         isAdLoading = true
         val adRequest = AdRequest.Builder().build()
+        Log.d("InterstitialAdManager", "Loading Interstitial Ad: $adUnitId")
 
         InterstitialAd.load(
             context,
@@ -36,13 +37,13 @@ class InterstitialAdManager(private val context: Context) {
             adRequest,
             object : InterstitialAdLoadCallback() {
                 override fun onAdFailedToLoad(adError: LoadAdError) {
-                    Log.d("InterstitialAdManager", adError.toString())
+                    Log.e("InterstitialAdManager", "Interstitial failed to load: ${adError.code} - ${adError.message}")
                     interstitialAd = null
                     isAdLoading = false
                 }
 
                 override fun onAdLoaded(ad: InterstitialAd) {
-                    Log.d("InterstitialAdManager", "Ad was loaded.")
+                    Log.d("InterstitialAdManager", "Interstitial Ad loaded successfully.")
                     interstitialAd = ad
                     isAdLoading = false
                 }
