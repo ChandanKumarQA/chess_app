@@ -13,8 +13,8 @@ android {
         applicationId = "com.chessmaster.play"
         minSdk = 24
         targetSdk = 36
-        versionCode = 29
-        versionName = "1.3.2"
+        versionCode = 30
+        versionName = "1.3.3"
     }
 
     buildTypes {
@@ -61,8 +61,9 @@ dependencies {
   implementation(libs.androidx.lifecycle.viewmodel.compose)
   implementation("androidx.lifecycle:lifecycle-process:2.7.0")
   
-  // Google Play Billing
+  // Google Play Billing & In-App Review
   implementation("com.android.billingclient:billing-ktx:9.0.0")
+  implementation("com.google.android.play:review-ktx:2.0.2")
 
   // Compose
   implementation(libs.androidx.compose.ui)

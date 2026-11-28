@@ -255,6 +255,7 @@ fun PuzzleGameScreen(onBack: () -> Unit) {
         rewardCoins = (if (granted) puzzle.coinsReward else 0) + bonusCoins
         streakDays = com.chessmaster.play.data.LocalLeaderboardManager.recordPuzzleDay(ctx)
         totalXp = com.chessmaster.play.data.LocalLeaderboardManager.getTotalXp(ctx)
+        com.chessmaster.play.InAppReviewManager.recordMilestoneAndRequestReview(activity)
     }
 
     if (boardState == null) return

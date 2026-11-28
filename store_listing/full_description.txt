@@ -1,0 +1,32 @@
+Welcome to Chess Master — the ultimate offline chess game and training suite designed for beginners, casual players, and tournament tacticians. Whether you want to play chess offline without WiFi, sharpen your tactical vision with 1,000+ puzzles, or challenge adaptive AI bots, Chess Master gives you everything you need to master the board.
+
+★ PLAY CHESS OFFLINE – ANYTIME, ANYWHERE
+No internet? No problem. Enjoy seamless chess games offline wherever you travel:
+• Play vs Computer: Challenge smart AI bots ranging from 400 beginner ELO up to 2000+ Master strength.
+• Adaptive Bots: Each chess bot features distinct playing styles, opening preferences, and tactical strengths.
+• Pass & Play: Play 2 player chess with friends and family on a single device with a clean physical board feel.
+
+★ 1,000+ TACTICAL CHESS PUZZLES & DAILY CHALLENGES
+Accelerate your calculation speed and pattern recognition with structured training:
+• Tactical Themes: Train specific motifs including Forks, Pins, Skewers, Discovered Attacks, Deflections, and Smothered Mates.
+• Daily Chess Puzzle: Solve a brand new curated puzzle every day and build your daily puzzle streak!
+• Puzzle Rush: Test your speed calculation in 3-minute and 5-minute timed puzzle challenges.
+• Survival Mode: Test how far your chess tactics can take you with 3 strikes.
+
+★ MASTER THE ENDGAME & OPENING TRAPS
+Games are won in the endgame. Learn crucial theoretical winning methods:
+• Endgame Drills: Practice Rook endgames, King & Pawn endings, Queen vs Pawn, Bishop/Knight coordination, and classical Lucena and Philidor positions.
+• Opening Traps: Discover treacherous traps across popular openings so you never get caught off-guard.
+
+★ IN-DEPTH CHESS ANALYSIS BOARD & UTILITIES
+Turn every game into a private chess lesson:
+• Built-in Engine Analysis: Review your moves, spot tactical blunders, and discover winning combinations.
+• FEN & PGN Support: Import custom positions and export your favorite games for deeper review.
+• Digital Chess Clock: Turn your phone into an official tournament chess timer with customizable increment controls (Blitz, Rapid, Bullet, Custom).
+
+★ DESIGNED FOR A PREMIUM CHESS EXPERIENCE
+• Smooth piece animations, realistic sound effects, and customizable 2D/3D board themes.
+• Full piece move hints, undo options, and smart legal move indicators.
+• Lightweight app size optimized for smooth performance on all Android devices without draining your battery.
+
+Download Chess Master today, sharpen your mind with daily puzzles, and play chess offline whenever inspiration strikes!

@@ -508,6 +508,12 @@ fun BotGameScreen(
             val botWon = gameState == GameState.CHECKMATE && currentTurn == humanColor
             val nextBot = if (userWon) gameManager.getNextBot(currentBot.id) else null
 
+            LaunchedEffect(gameState) {
+                if (userWon) {
+                    com.chessmaster.play.InAppReviewManager.recordMilestoneAndRequestReview(activity)
+                }
+            }
+
             AlertDialog(
                 onDismissRequest = { /* ignore */ },
                 containerColor = Color(0xFF1E2632),

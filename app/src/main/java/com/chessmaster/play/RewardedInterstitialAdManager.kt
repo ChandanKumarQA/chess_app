@@ -17,11 +17,6 @@ private const val TAG = "RewardedInterstitial"
  * Manages Rewarded Interstitial Ads (ad unit: ca-app-pub-8940048544519183/4409959112).
  */
 class RewardedInterstitialAdManager(private val context: Context) {
-
-    companion object {
-        const val AD_UNIT_ID = "ca-app-pub-8940048544519183/4409959112"
-    }
-
     private var rewardedInterstitialAd: RewardedInterstitialAd? = null
     private var isLoading = false
 
@@ -42,7 +37,7 @@ class RewardedInterstitialAdManager(private val context: Context) {
         val request = AdRequest.Builder().build()
         RewardedInterstitialAd.load(
             context,
-            AdIds.rewardedInterstitial(context),
+            AdIds.REWARDED_INTERSTITIAL,
             request,
             object : RewardedInterstitialAdLoadCallback() {
                 override fun onAdLoaded(ad: RewardedInterstitialAd) {

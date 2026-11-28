@@ -8,34 +8,19 @@ import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
-import com.google.android.gms.ads.admanager.AdManagerAdRequest
 import com.google.android.gms.ads.rewarded.RewardedAd
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
 
 private const val TAG = "RewardedAdManager"
 
 /**
- * Manages Rewarded Ads with automatic fallback from AdMob to Google Ad Manager (GAM).
- *
- * Supports single rewarded ads as well as consecutive/back-to-back rewarded ads (e.g., 2 ads for 10 hints).
- *
- * GAM Ad Unit: /23374332010/chess_master_rewarded
- * Supported GAM Creative Sizes:
- * - (320, 480) - Mobile Portrait
- * - (480, 320) - Mobile Landscape
- * - (768, 1024) - Tablet Portrait
- * - (1024, 768) - Tablet Landscape
+ * Manages Rewarded Ads for AdMob unit: ca-app-pub-8940048544519183/2330590681.
+ * Supports single rewarded ads as well as consecutive/back-to-back rewarded ads (e.g. 2 ads for 10 hints).
  */
 class RewardedAdManager(
     private val context: Context,
-    private val adMobAdUnitId: String = AdIds.rewarded(context),
-    private val gamAdUnitId: String = DEFAULT_GAM_REWARDED_ID
+    private val adMobAdUnitId: String = AdIds.REWARDED
 ) {
-    companion object {
-        const val DEFAULT_ADMOB_REWARDED_ID = "ca-app-pub-8940048544519183/2330590681" // REAL ID
-        const val DEFAULT_GAM_REWARDED_ID = "/23374332010/chess_master_rewarded"
-    }
-
     private var rewardedAd: RewardedAd? = null
     private var isLoading = false
     private val loadCallbacks = mutableListOf<(Boolean) -> Unit>()
@@ -72,36 +57,13 @@ class RewardedAdManager(
             adRequest,
             object : RewardedAdLoadCallback() {
                 override fun onAdFailedToLoad(adError: LoadAdError) {
-                    Log.w(TAG, "AdMob Rewarded Ad failed to load: ${adError.message} (Code: ${adError.code}). Falling back to GAM...")
-                    loadGamFallback()
-                }
-
-                override fun onAdLoaded(ad: RewardedAd) {
-                    Log.d(TAG, "AdMob Rewarded Ad loaded successfully ($adMobAdUnitId)")
-                    rewardedAd = ad
-                    notifyLoadResult(true)
-                }
-            }
-        )
-    }
-
-    private fun loadGamFallback() {
-        Log.d(TAG, "Attempting to load GAM Rewarded Ad fallback: $gamAdUnitId")
-        val gamRequest = AdManagerAdRequest.Builder().build()
-
-        RewardedAd.load(
-            context,
-            gamAdUnitId,
-            gamRequest,
-            object : RewardedAdLoadCallback() {
-                override fun onAdFailedToLoad(gamError: LoadAdError) {
-                    Log.e(TAG, "GAM Rewarded Ad also failed to load: ${gamError.message} (Code: ${gamError.code})")
+                    Log.e(TAG, "AdMob Rewarded Ad failed to load: ${adError.code} - ${adError.message}")
                     rewardedAd = null
                     notifyLoadResult(false)
                 }
 
                 override fun onAdLoaded(ad: RewardedAd) {
-                    Log.d(TAG, "GAM Rewarded Ad loaded successfully ($gamAdUnitId)")
+                    Log.d(TAG, "AdMob Rewarded Ad loaded successfully ($adMobAdUnitId)")
                     rewardedAd = ad
                     notifyLoadResult(true)
                 }
@@ -162,10 +124,6 @@ class RewardedAdManager(
 
     /**
      * Shows consecutive back-to-back rewarded ads (e.g. 2 ads in a sequence for 10 hints).
-     *
-     * @param targetAdCount Number of ads to display consecutively (defaults to 2).
-     * @param onSingleAdWatched Invoked each time an individual ad is completed (1-indexed).
-     * @param onAllAdsCompleted Invoked once all target ads have been watched.
      */
     fun showConsecutiveAds(
         activity: Activity,
@@ -203,7 +161,6 @@ class RewardedAdManager(
                             onSingleAdWatched(adsCompleted)
 
                             if (adsCompleted < targetAdCount) {
-                                // Check if next ad is already in cache
                                 if (rewardedAd != null) {
                                     playNext()
                                 } else {
@@ -216,14 +173,13 @@ class RewardedAdManager(
                                         if (loaded && !activity.isFinishing && !activity.isDestroyed) {
                                             playNext()
                                         } else {
-                                            // Fallback if 2nd ad cannot load
                                             onAllAdsCompleted()
                                         }
                                     }
                                 }
                             } else {
                                 onAllAdsCompleted()
-                                loadAd() // Preload for next time
+                                loadAd()
                             }
                         } else {
                             Toast.makeText(
@@ -243,7 +199,7 @@ class RewardedAdManager(
 
                     override fun onAdShowedFullScreenContent() {
                         Log.d(TAG, "Rewarded ad $adsCompleted showed fullscreen. Preloading next ad in background...")
-                        loadAd() // Preload next ad right away while user watches
+                        loadAd()
                     }
                 }
 
